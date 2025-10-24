@@ -1,0 +1,80 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+}
+
+const { profile } = Astro.locals;
+const { title } = Astro.props;
+---
+
+<Layout title={title}>
+  <div class='min-h-screen flex flex-col'>
+    <!-- Navegación -->
+    <nav class='bg-blue-600 text-white shadow-lg'>
+      <div class='container mx-auto px-4'>
+        <div class='flex items-center justify-between h-16'>
+          <!-- Logo -->
+          <a
+            href='/app/dashboard'
+            class='text-2xl font-bold flex items-center gap-2'>
+            🐕 Animalets
+          </a>
+
+          <!-- Navegación Desktop -->
+          <div class='hidden md:flex items-center gap-6'>
+            <a href='/app/dashboard' class='hover:text-blue-200 transition'>
+              Dashboard
+            </a>
+            <a href='/app/mascotas' class='hover:text-blue-200 transition'>
+              Mis Mascotas
+            </a>
+            <a href='/app/reservar' class='hover:text-blue-200 transition'>
+              Reservar Cita
+            </a>
+          </div>
+
+          <!-- Usuario -->
+          <div class='flex items-center gap-4'>
+            <span class='hidden md:block text-sm'>
+              Hola, {profile?.full_name || profile?.email}
+            </span>
+            <form action='/api/auth/signout' method='POST'>
+              <button
+                type='submit'
+                class='bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg transition text-sm font-medium'>
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Navegación Mobile -->
+        <div class='md:hidden pb-4 flex gap-4'>
+          <a href='/app/dashboard' class='text-sm hover:text-blue-200'
+            >Dashboard</a
+          >
+          <a href='/app/mascotas' class='text-sm hover:text-blue-200'
+            >Mascotas</a
+          >
+          <a href='/app/reservar' class='text-sm hover:text-blue-200'
+            >Reservar</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class='flex-1 container mx-auto px-4 py-8'>
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class='bg-gray-800 text-white py-6 mt-auto'>
+      <div class='container mx-auto px-4 text-center text-sm'>
+        <p>&copy; 2025 Animalets. Todos los derechos reservados.</p>
+      </div>
+    </footer>
+  </div>
+</Layout>

@@ -12,17 +12,17 @@ if (accessToken) {
 const error = Astro.url.searchParams.get('error');
 ---
 
-<Layout title='Iniciar Sesión'>
+<Layout title='Crear Cuenta'>
   <div
-    class='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8'>
+    class='min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8'>
     <div class='max-w-md w-full'>
       <!-- Logo y título -->
       <div class='text-center mb-8'>
         <h1 class='text-4xl font-bold text-gray-900 mb-2'>🐕 Animalets</h1>
-        <h2 class='text-2xl font-semibold text-gray-700 mb-2'>
-          Iniciar Sesión
-        </h2>
-        <p class='text-gray-600'>Accede a tu cuenta para gestionar tus citas</p>
+        <h2 class='text-2xl font-semibold text-gray-700 mb-2'>Crear Cuenta</h2>
+        <p class='text-gray-600'>
+          Únete para gestionar las citas de tus mascotas
+        </p>
       </div>
 
       <!-- Card -->
@@ -36,7 +36,19 @@ const error = Astro.url.searchParams.get('error');
         }
 
         <!-- Formulario -->
-        <form action='/api/auth/signin' method='POST' class='space-y-6'>
+        <form action='/api/auth/register' method='POST' class='space-y-6'>
+          <div>
+            <label for='full_name' class='label'> Nombre completo </label>
+            <input
+              type='text'
+              name='full_name'
+              id='full_name'
+              required
+              class='input'
+              placeholder='Tu nombre'
+            />
+          </div>
+
           <div>
             <label for='email' class='label'> Correo electrónico </label>
             <input
@@ -46,6 +58,17 @@ const error = Astro.url.searchParams.get('error');
               required
               class='input'
               placeholder='tu@email.com'
+            />
+          </div>
+
+          <div>
+            <label for='phone' class='label'> Teléfono (opcional) </label>
+            <input
+              type='tel'
+              name='phone'
+              id='phone'
+              class='input'
+              placeholder='+34 600 000 000'
             />
           </div>
 
@@ -60,10 +83,26 @@ const error = Astro.url.searchParams.get('error');
               class='input'
               placeholder='••••••••'
             />
+            <p class='mt-1 text-xs text-gray-500'>Mínimo 8 caracteres</p>
+          </div>
+
+          <div>
+            <label for='password_confirm' class='label'>
+              Confirmar contraseña
+            </label>
+            <input
+              type='password'
+              name='password_confirm'
+              id='password_confirm'
+              required
+              minlength='8'
+              class='input'
+              placeholder='••••••••'
+            />
           </div>
 
           <button type='submit' class='btn btn-primary w-full'>
-            Iniciar sesión
+            Crear cuenta
           </button>
         </form>
 
@@ -73,7 +112,7 @@ const error = Astro.url.searchParams.get('error');
             <div class='w-full border-t border-gray-300'></div>
           </div>
           <div class='relative flex justify-center text-sm'>
-            <span class='px-2 bg-white text-gray-500'>O continúa con</span>
+            <span class='px-2 bg-white text-gray-500'>O regístrate con</span>
           </div>
         </div>
 
@@ -123,16 +162,33 @@ const error = Astro.url.searchParams.get('error');
           </form>
         </div>
 
-        <!-- Register link -->
+        <!-- Login link -->
         <p class='mt-6 text-center text-sm text-gray-600'>
-          ¿No tienes cuenta?
+          ¿Ya tienes cuenta?
           <a
-            href='/register'
+            href='/signin'
             class='font-medium text-blue-600 hover:text-blue-500'>
-            Regístrate aquí
+            Inicia sesión aquí
           </a>
         </p>
       </div>
     </div>
   </div>
 </Layout>
+
+<script>
+  // Validar que las contraseñas coincidan
+  const form = document.querySelector('form');
+  const password = document.getElementById('password') as HTMLInputElement;
+  const passwordConfirm = document.getElementById(
+    'password_confirm'
+  ) as HTMLInputElement;
+
+  form?.addEventListener('submit', (e) => {
+    if (password.value !== passwordConfirm.value) {
+      e.preventDefault();
+      alert('Las contraseñas no coinciden');
+      passwordConfirm.focus();
+    }
+  });
+</script>

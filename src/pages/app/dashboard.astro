@@ -1,0 +1,200 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+const { user } = Astro.locals;
+
+// Obtener próximas citas
+const { data: appointments } = await supabase
+  .from('appointments')
+  .select(
+    `
+    *,
+    pet:pets(name, breed, size),
+    service:services(name, duration_minutes, price)
+  `
+  )
+  .eq('client_id', user.id)
+  .gte('date', new Date().toISOString().split('T')[0])
+  .order('date', { ascending: true })
+  .order('start_time', { ascending: true })
+  .limit(5);
+
+// Obtener mascotas
+const { data: pets } = await supabase
+  .from('pets')
+  .select('*')
+  .eq('owner_id', user.id);
+
+const statusLabels = {
+  pending: 'Pendiente',
+  in_bath: 'En Baño',
+  drying: 'Secando',
+  grooming: 'Peinado',
+  completed: 'Completado',
+  cancelled: 'Cancelado',
+  no_show: 'No se presentó',
+};
+---
+
+<AppLayout title='Dashboard'>
+  <div class='max-w-6xl mx-auto'>
+    <!-- Bienvenida -->
+    <div class='mb-8'>
+      <h1 class='text-3xl font-bold text-gray-900 mb-2'>
+        Bienvenido de vuelta! 👋
+      </h1>
+      <p class='text-gray-600'>Gestiona tus mascotas y citas desde aquí</p>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class='grid md:grid-cols-3 gap-6 mb-8'>
+      <a href='/app/reservar' class='card-hover text-center'>
+        <div class='text-4xl mb-3'>📅</div>
+        <h3 class='font-semibold text-lg mb-1'>Reservar Cita</h3>
+        <p class='text-sm text-gray-600'>Agenda una nueva cita</p>
+      </a>
+
+      <a href='/app/mascotas' class='card-hover text-center'>
+        <div class='text-4xl mb-3'>🐕</div>
+        <h3 class='font-semibold text-lg mb-1'>Mis Mascotas</h3>
+        <p class='text-sm text-gray-600'>Gestiona tus mascotas</p>
+      </a>
+
+      <div class='card-hover text-center cursor-default'>
+        <div class='text-4xl mb-3'>💰</div>
+        <h3 class='font-semibold text-lg mb-1'>Estadísticas</h3>
+        <p class='text-sm text-gray-600'>
+          {pets?.length || 0} mascotas registradas
+        </p>
+      </div>
+    </div>
+
+    <div class='grid lg:grid-cols-2 gap-8'>
+      <!-- Próximas Citas -->
+      <div>
+        <div class='flex items-center justify-between mb-4'>
+          <h2 class='text-2xl font-bold text-gray-900'>Próximas Citas</h2>
+          <a
+            href='/app/reservar'
+            class='text-blue-600 hover:text-blue-700 text-sm font-medium'>
+            Nueva cita →
+          </a>
+        </div>
+
+        {
+          appointments && appointments.length > 0 ? (
+            <div class='space-y-4'>
+              {appointments.map((apt: any) => (
+                <div class='card'>
+                  <div class='flex items-start justify-between'>
+                    <div class='flex-1'>
+                      <div class='flex items-center gap-2 mb-2'>
+                        <span class='text-2xl'>🐕</span>
+                        <h3 class='font-semibold text-lg'>{apt.pet.name}</h3>
+                        <span class={`badge badge-${apt.status}`}>
+                          {
+                            statusLabels[
+                              apt.status as keyof typeof statusLabels
+                            ]
+                          }
+                        </span>
+                      </div>
+                      <p class='text-sm text-gray-600 mb-1'>
+                        <strong>Servicio:</strong> {apt.service.name}
+                      </p>
+                      <p class='text-sm text-gray-600 mb-1'>
+                        <strong>Fecha:</strong>{' '}
+                        {new Date(apt.date).toLocaleDateString('es-ES', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      <p class='text-sm text-gray-600'>
+                        <strong>Hora:</strong> {apt.start_time.substring(0, 5)}
+                      </p>
+                    </div>
+                    <div class='text-right'>
+                      <p class='text-2xl font-bold text-blue-600'>
+                        €{apt.service.price}
+                      </p>
+                      {apt.status === 'pending' && (
+                        <a
+                          href={`/app/tracker/${apt.id}`}
+                          class='text-sm text-blue-600 hover:text-blue-700 mt-2 inline-block'>
+                          Ver tracker →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class='card text-center py-8'>
+              <div class='text-6xl mb-4'>📭</div>
+              <h3 class='text-xl font-semibold mb-2'>
+                No tienes citas próximas
+              </h3>
+              <p class='text-gray-600 mb-4'>
+                ¿Listo para agendar la próxima visita de tu mascota?
+              </p>
+              <a href='/app/reservar' class='btn btn-primary'>
+                Reservar ahora
+              </a>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Mis Mascotas -->
+      <div>
+        <div class='flex items-center justify-between mb-4'>
+          <h2 class='text-2xl font-bold text-gray-900'>Mis Mascotas</h2>
+          <a
+            href='/app/mascotas'
+            class='text-blue-600 hover:text-blue-700 text-sm font-medium'>
+            Ver todas →
+          </a>
+        </div>
+
+        {
+          pets && pets.length > 0 ? (
+            <div class='grid sm:grid-cols-2 gap-4'>
+              {pets.map((pet: any) => (
+                <div class='card-hover'>
+                  <div class='flex items-center gap-4'>
+                    <div class='w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-3xl'>
+                      🐕
+                    </div>
+                    <div class='flex-1'>
+                      <h3 class='font-semibold text-lg'>{pet.name}</h3>
+                      <p class='text-sm text-gray-600'>
+                        {pet.breed || 'Sin raza'} • {pet.size}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class='card text-center py-8'>
+              <div class='text-6xl mb-4'>🐾</div>
+              <h3 class='text-xl font-semibold mb-2'>
+                No tienes mascotas registradas
+              </h3>
+              <p class='text-gray-600 mb-4'>
+                Añade tu primera mascota para poder reservar citas
+              </p>
+              <a href='/app/mascotas' class='btn btn-primary'>
+                Añadir mascota
+              </a>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</AppLayout>

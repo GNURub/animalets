@@ -1,11 +1,218 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
-<Layout>
-	<Welcome />
+<Layout title='Animalets - Peluquería Canina'>
+  <!-- Hero Section -->
+  <section
+    class='relative bg-linear-to-br from-blue-600 to-blue-800 text-white py-20'>
+    <div class='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      <div class='text-center'>
+        <h1 class='text-5xl md:text-6xl font-bold mb-6'>
+          Bienvenido a Animalets
+        </h1>
+        <p class='text-xl md:text-2xl mb-8 text-blue-100'>
+          Cuidado profesional para tu mejor amigo
+        </p>
+        <div class='flex flex-col sm:flex-row gap-4 justify-center'>
+          <a
+            href='/register'
+            class='btn bg-white text-blue-600 hover:bg-blue-50 text-lg py-4 px-8'>
+            Comenzar Ahora
+          </a>
+          <a
+            href='#servicios'
+            class='btn bg-blue-700 hover:bg-blue-600 text-lg py-4 px-8'>
+            Ver Servicios
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class='py-20 bg-gray-50'>
+    <div class='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      <h2 class='text-4xl font-bold text-center mb-12'>
+        ¿Por qué elegir Animalets?
+      </h2>
+
+      <div class='grid grid-cols-1 md:grid-cols-3 gap-8'>
+        <div class='card text-center'>
+          <div class='text-5xl mb-4'>📅</div>
+          <h3 class='text-xl font-bold mb-2'>Reservas Fáciles</h3>
+          <p class='text-gray-600'>
+            Agenda tus citas online en segundos. Elige fecha, hora y servicio
+            desde tu móvil o computadora.
+          </p>
+        </div>
+
+        <div class='card text-center'>
+          <div class='text-5xl mb-4'>👁️</div>
+          <h3 class='text-xl font-bold mb-2'>Seguimiento en Tiempo Real</h3>
+          <p class='text-gray-600'>
+            Mantente informado del estado de tu mascota durante su sesión de
+            peluquería.
+          </p>
+        </div>
+
+        <div class='card text-center'>
+          <div class='text-5xl mb-4'>⭐</div>
+          <h3 class='text-xl font-bold mb-2'>Profesionales Certificados</h3>
+          <p class='text-gray-600'>
+            Personal altamente capacitado con años de experiencia en el cuidado
+            de mascotas.
+          </p>
+        </div>
+
+        <div class='card text-center'>
+          <div class='text-5xl mb-4'>🏥</div>
+          <h3 class='text-xl font-bold mb-2'>Instalaciones Sanitizadas</h3>
+          <p class='text-gray-600'>
+            Espacios limpios y seguros, siguiendo estrictos protocolos de
+            higiene y desinfección.
+          </p>
+        </div>
+
+        <div class='card text-center'>
+          <div class='text-5xl mb-4'>💰</div>
+          <h3 class='text-xl font-bold mb-2'>Precios Transparentes</h3>
+          <p class='text-gray-600'>
+            Sin costos ocultos. Conoce el precio exacto antes de reservar tu
+            cita.
+          </p>
+        </div>
+
+        <div class='card text-center'>
+          <div class='text-5xl mb-4'>🎁</div>
+          <h3 class='text-xl font-bold mb-2'>Promociones Exclusivas</h3>
+          <p class='text-gray-600'>
+            Descuentos especiales y paquetes para clientes frecuentes. ¡Tu
+            fidelidad tiene recompensa!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Preview Section -->
+  <section id='servicios' class='py-20'>
+    <div class='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      <h2 class='text-4xl font-bold text-center mb-4'>Nuestros Servicios</h2>
+      <p class='text-center text-gray-600 mb-12'>
+        Ofrecemos una amplia gama de servicios para mantener a tu mascota feliz
+        y saludable
+      </p>
+
+      <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+        <div class='card hover:shadow-xl transition-shadow'>
+          <div class='text-4xl mb-3'>✂️</div>
+          <h3 class='text-xl font-bold mb-2'>Corte de Pelo</h3>
+          <p class='text-gray-600 text-sm mb-4'>
+            Estilismo profesional adaptado a cada raza
+          </p>
+          <p class='text-2xl font-bold text-blue-600'>€25-€45</p>
+        </div>
+
+        <div class='card hover:shadow-xl transition-shadow'>
+          <div class='text-4xl mb-3'>🛁</div>
+          <h3 class='text-xl font-bold mb-2'>Baño Completo</h3>
+          <p class='text-gray-600 text-sm mb-4'>
+            Limpieza profunda con productos premium
+          </p>
+          <p class='text-2xl font-bold text-blue-600'>€20-€35</p>
+        </div>
+
+        <div class='card hover:shadow-xl transition-shadow'>
+          <div class='text-4xl mb-3'>💅</div>
+          <h3 class='text-xl font-bold mb-2'>Corte de Uñas</h3>
+          <p class='text-gray-600 text-sm mb-4'>Cuidado delicado de las uñas</p>
+          <p class='text-2xl font-bold text-blue-600'>€10</p>
+        </div>
+
+        <div class='card hover:shadow-xl transition-shadow'>
+          <div class='text-4xl mb-3'>🌟</div>
+          <h3 class='text-xl font-bold mb-2'>Spa Premium</h3>
+          <p class='text-gray-600 text-sm mb-4'>Tratamiento completo de lujo</p>
+          <p class='text-2xl font-bold text-blue-600'>€60-€90</p>
+        </div>
+      </div>
+
+      <div class='text-center'>
+        <a href='/register' class='btn btn-primary text-lg py-4 px-8'>
+          Reservar Ahora
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class='bg-blue-600 text-white py-16'>
+    <div class='max-w-4xl mx-auto text-center px-4'>
+      <h2 class='text-3xl md:text-4xl font-bold mb-4'>
+        ¿Listo para mimar a tu mascota?
+      </h2>
+      <p class='text-xl mb-8 text-blue-100'>
+        Únete a cientos de clientes satisfechos. Registra tu cuenta gratis y
+        agenda tu primera cita.
+      </p>
+      <div class='flex flex-col sm:flex-row gap-4 justify-center'>
+        <a
+          href='/register'
+          class='btn bg-white text-blue-600 hover:bg-blue-50 text-lg py-4 px-8'>
+          Crear Cuenta Gratis
+        </a>
+        <a
+          href='/signin'
+          class='btn bg-blue-700 hover:bg-blue-800 text-lg py-4 px-8'>
+          Ya tengo cuenta
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class='bg-gray-900 text-white py-12'>
+    <div class='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      <div class='grid grid-cols-1 md:grid-cols-3 gap-8 mb-8'>
+        <div>
+          <h3 class='text-xl font-bold mb-4'>Animalets</h3>
+          <p class='text-gray-400'>
+            Tu centro de confianza para el cuidado y bienestar de tu mascota.
+          </p>
+        </div>
+
+        <div>
+          <h3 class='text-xl font-bold mb-4'>Enlaces Rápidos</h3>
+          <ul class='space-y-2 text-gray-400'>
+            <li>
+              <a href='#servicios' class='hover:text-white transition-colors'
+                >Servicios</a>
+            </li>
+            <li>
+              <a href='/signin' class='hover:text-white transition-colors'
+                >Iniciar Sesión</a>
+            </li>
+            <li>
+              <a href='/register' class='hover:text-white transition-colors'
+                >Registrarse</a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class='text-xl font-bold mb-4'>Contacto</h3>
+          <ul class='space-y-2 text-gray-400'>
+            <li>📧 info@animalets.com</li>
+            <li>📞 +34 600 000 000</li>
+            <li>📍 Madrid, España</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class='border-t border-gray-800 pt-8 text-center text-gray-400'>
+        <p>&copy; 2025 Animalets. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
 </Layout>

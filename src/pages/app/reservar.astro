@@ -1,0 +1,56 @@
+---
+import BookingWizard from '../../components/BookingWizard';
+import AppLayout from '../../layouts/AppLayout.astro';
+
+const { user } = Astro.locals;
+
+// Obtener mascotas del usuario para el selector
+const { data: pets } = await Astro.locals.supabase
+  .from('pets')
+  .select('*')
+  .eq('owner_id', user.id)
+  .order('name', { ascending: true });
+
+// Obtener servicios activos
+const { data: services } = await Astro.locals.supabase
+  .from('services')
+  .select('*')
+  .eq('is_active', true)
+  .order('name', { ascending: true });
+---
+
+<AppLayout title='Reservar Cita'>
+  <div class='max-w-4xl mx-auto'>
+    <div class='mb-8'>
+      <h1 class='text-3xl font-bold text-gray-900 mb-2'>Reservar Cita</h1>
+      <p class='text-gray-600'>
+        Selecciona el servicio, mascota y horario para tu cita
+      </p>
+    </div>
+
+    {
+      pets && pets.length === 0 ? (
+        <div class='card text-center py-12'>
+          <div class='text-6xl mb-4'>🐾</div>
+          <h3 class='text-xl font-semibold text-gray-900 mb-2'>
+            Primero debes registrar una mascota
+          </h3>
+          <p class='text-gray-600 mb-6'>
+            Para poder reservar una cita, necesitas tener al menos una mascota
+            registrada
+          </p>
+          <a href='/app/mascotas' class='btn btn-primary inline-block'>
+            Ir a Mis Mascotas
+          </a>
+        </div>
+      ) : (
+        <BookingWizard
+          client:load
+          pets={pets || []}
+          services={services || []}
+          userId={user.id}
+        />
+      )
+    }
+  </div>
+</AppLayout>
