@@ -158,8 +158,8 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
                 <button
                     onClick={() => activeTab.value = 'hours'}
                     class={`px-6 py-3 rounded-lg font-semibold transition-colors ${activeTab.value === 'hours'
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                 >
                     Horarios de Negocio
@@ -167,8 +167,8 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
                 <button
                     onClick={() => activeTab.value = 'blocked'}
                     class={`px-6 py-3 rounded-lg font-semibold transition-colors ${activeTab.value === 'blocked'
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                 >
                     Tiempos Bloqueados
