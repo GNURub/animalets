@@ -19,9 +19,9 @@ const { data: appointments } = await supabase
   `
   )
   .eq('client_id', user.id)
-  .gte('date', new Date().toISOString().split('T')[0])
-  .order('date', { ascending: true })
-  .order('start_time', { ascending: true })
+  .gte('scheduled_date', new Date().toISOString().split('T')[0])
+  .order('scheduled_date', { ascending: true })
+  .order('scheduled_time', { ascending: true })
   .limit(5);
 
 // Obtener mascotas
@@ -109,15 +109,19 @@ const statusLabels = {
                       </p>
                       <p class='mb-1 text-sm text-gray-600'>
                         <strong>Fecha:</strong>{' '}
-                        {new Date(apt.date).toLocaleDateString('es-ES', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
+                        {new Date(apt.scheduled_date).toLocaleDateString(
+                          'es-ES',
+                          {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          }
+                        )}
                       </p>
                       <p class='text-sm text-gray-600'>
-                        <strong>Hora:</strong> {apt.start_time.substring(0, 5)}
+                        <strong>Hora:</strong>{' '}
+                        {apt.scheduled_time.substring(0, 5)}
                       </p>
                     </div>
                     <div class='text-right'>
