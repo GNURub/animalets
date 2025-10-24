@@ -9,7 +9,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     const body = await request.json();
-    const { name, species, breed, birth_date, weight, notes, owner_id } = body;
+    const {
+      name,
+      species,
+      breed,
+      birth_date,
+      weight,
+      notes,
+      owner_id,
+      size,
+      gender,
+      photo_url,
+    } = body;
 
     // Validar que el usuario solo puede crear mascotas para sí mismo
     if (owner_id !== user.id) {
@@ -17,13 +28,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Validar campos requeridos
-    if (!name || !species) {
-      return new Response('Nombre y especie son requeridos', { status: 400 });
+    if (!name || !species || !size) {
+      return new Response('Nombre, especie y tamaño son requeridos', {
+        status: 400,
+      });
     }
 
     // Validar especie
     if (!['dog', 'cat', 'other'].includes(species)) {
       return new Response('Especie inválida', { status: 400 });
+    }
+
+    // Validar tamaño
+    if (!['pequeño', 'mediano', 'grande'].includes(size)) {
+      return new Response('Tamaño inválido', { status: 400 });
+    }
+
+    // Validar género si se proporciona
+    if (gender && !['macho', 'hembra'].includes(gender)) {
+      return new Response('Género inválido', { status: 400 });
     }
 
     const { data, error } = await locals.supabase
@@ -36,6 +59,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         birth_date,
         weight,
         notes,
+        size,
+        gender,
+        photo_url,
       })
       .select()
       .single();
