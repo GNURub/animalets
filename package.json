@@ -13,12 +13,18 @@
     "@preact/signals": "^2.3.2",
     "@supabase/supabase-js": "^2.76.1",
     "@tailwindcss/vite": "^4.1.16",
+    "@types/react-big-calendar": "^1.16.3",
     "astro": "^5.15.1",
+    "date-fns": "^4.1.0",
     "preact": "^10.27.2",
+    "react-big-calendar": "^1.19.4",
     "tailwindcss": "^4.1.16"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.5",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "moment": "^2.30.1",
     "prettier": "3.6.2",
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "^0.7.1",
