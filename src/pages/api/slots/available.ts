@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .from('business_hours')
       .select('*')
       .eq('day_of_week', dayOfWeek)
-      .eq('is_open', true)
+      .eq('is_closed', false)
       .single();
 
     if (!businessHours) {
