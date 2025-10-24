@@ -1,0 +1,100 @@
+---
+import TodayKanban from '../../components/TodayKanban';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const { supabase } = Astro.locals;
+
+// Obtener las citas de hoy
+const today = new Date().toISOString().split('T')[0];
+
+const { data: todayAppointments } = await supabase
+  .from('appointments')
+  .select(
+    `
+    *,
+    services(name, duration_minutes, price),
+    pets(name, species, breed),
+    profiles(full_name, email, phone)
+  `
+  )
+  .eq('scheduled_date', today)
+  .order('scheduled_time', { ascending: true });
+
+// Separar por estado
+const pending = todayAppointments?.filter((a) => a.status === 'pending') || [];
+const confirmed =
+  todayAppointments?.filter((a) => a.status === 'confirmed') || [];
+const inProgress =
+  todayAppointments?.filter((a) => a.status === 'in_progress') || [];
+const completed =
+  todayAppointments?.filter((a) => a.status === 'completed') || [];
+
+// Estadísticas del día
+const stats = {
+  total: todayAppointments?.length || 0,
+  pending: pending.length,
+  confirmed: confirmed.length,
+  inProgress: inProgress.length,
+  completed: completed.length,
+  revenue:
+    todayAppointments?.reduce((sum, a) => sum + (a.services?.price || 0), 0) ||
+    0,
+};
+---
+
+<AdminLayout title='Citas de Hoy'>
+  <div class='mb-8'>
+    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Citas de Hoy</h1>
+    <p class='text-gray-600'>
+      {
+        new Date().toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      }
+    </p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class='grid grid-cols-2 md:grid-cols-6 gap-4 mb-8'>
+    <div class='card text-center'>
+      <div class='text-2xl font-bold text-gray-900'>{stats.total}</div>
+      <div class='text-sm text-gray-600'>Total</div>
+    </div>
+    <div class='card text-center'>
+      <div class='text-2xl font-bold text-yellow-600'>{stats.pending}</div>
+      <div class='text-sm text-gray-600'>Pendientes</div>
+    </div>
+    <div class='card text-center'>
+      <div class='text-2xl font-bold text-blue-600'>{stats.confirmed}</div>
+      <div class='text-sm text-gray-600'>Confirmadas</div>
+    </div>
+    <div class='card text-center'>
+      <div class='text-2xl font-bold text-purple-600'>{stats.inProgress}</div>
+      <div class='text-sm text-gray-600'>En Proceso</div>
+    </div>
+    <div class='card text-center'>
+      <div class='text-2xl font-bold text-green-600'>{stats.completed}</div>
+      <div class='text-sm text-gray-600'>Completadas</div>
+    </div>
+    <div class='card text-center'>
+      <div class='text-2xl font-bold text-green-600'>
+        €{stats.revenue.toFixed(2)}
+      </div>
+      <div class='text-sm text-gray-600'>Ingresos</div>
+    </div>
+  </div>
+
+  <!-- Kanban Board -->
+  <TodayKanban
+    client:load
+    initialAppointments={{
+      pending,
+      confirmed,
+      inProgress,
+      completed,
+    }}
+  />
+</AdminLayout>

@@ -1,0 +1,49 @@
+---
+import AdminCalendar from '../../components/AdminCalendar';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const { supabase } = Astro.locals;
+
+// Obtener todas las citas del mes actual
+const now = new Date();
+const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+const firstDayStr = firstDay.toISOString().split('T')[0];
+const lastDayStr = lastDay.toISOString().split('T')[0];
+
+const { data: appointments } = await supabase
+  .from('appointments')
+  .select(
+    `
+    *,
+    services(name, duration_minutes, price),
+    pets(name, species),
+    profiles(full_name, email, phone)
+  `
+  )
+  .gte('scheduled_date', firstDayStr)
+  .lte('scheduled_date', lastDayStr)
+  .order('scheduled_date', { ascending: true })
+  .order('scheduled_time', { ascending: true });
+
+// Obtener servicios para el modal de crear cita
+const { data: services } = await supabase
+  .from('services')
+  .select('*')
+  .eq('is_active', true)
+  .order('name', { ascending: true });
+---
+
+<AdminLayout title='Calendario de Citas'>
+  <div class='mb-8'>
+    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Calendario de Citas</h1>
+    <p class='text-gray-600'>Vista mensual de todas las reservas</p>
+  </div>
+
+  <AdminCalendar
+    client:load
+    initialAppointments={appointments || []}
+    services={services || []}
+  />
+</AdminLayout>

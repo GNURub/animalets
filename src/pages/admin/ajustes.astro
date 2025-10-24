@@ -1,0 +1,36 @@
+---
+import BusinessSettings from '../../components/BusinessSettings';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const { supabase } = Astro.locals;
+
+// Obtener configuración de horarios de negocio
+const { data: businessHours } = await supabase
+  .from('business_hours')
+  .select('*')
+  .order('day_of_week', { ascending: true });
+
+// Obtener tiempos bloqueados futuros
+const today = new Date().toISOString().split('T')[0];
+const { data: blockedTimes } = await supabase
+  .from('blocked_times')
+  .select('*')
+  .gte('date', today)
+  .order('date', { ascending: true })
+  .order('start_time', { ascending: true });
+---
+
+<AdminLayout title='Ajustes del Negocio'>
+  <div class='mb-8'>
+    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Ajustes del Negocio</h1>
+    <p class='text-gray-600'>
+      Configura horarios de operación y tiempos bloqueados
+    </p>
+  </div>
+
+  <BusinessSettings
+    client:load
+    initialBusinessHours={businessHours || []}
+    initialBlockedTimes={blockedTimes || []}
+  />
+</AdminLayout>
