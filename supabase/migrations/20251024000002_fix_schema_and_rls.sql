@@ -1,9 +1,12 @@
 -- Migración para corregir el esquema y las políticas RLS
 
 -- ============================================================
--- 1. AGREGAR COLUMNA SPECIES A PETS
+-- 1. AGREGAR COLUMNA SPECIES A PETS Y RENOMBRAR WEIGHT_KG
 -- ============================================================
 ALTER TABLE pets ADD COLUMN IF NOT EXISTS species TEXT NOT NULL DEFAULT 'dog' CHECK (species IN ('dog', 'cat', 'other'));
+
+-- Renombrar weight_kg a weight para coincidir con el código
+ALTER TABLE pets RENAME COLUMN weight_kg TO weight;
 
 -- Actualizar valores existentes si los hay
 UPDATE pets SET species = 'dog' WHERE species IS NULL;
