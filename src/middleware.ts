@@ -3,7 +3,7 @@ import { supabase } from './lib/supabase';
 
 export const onRequest: MiddlewareHandler = async (
   { cookies, url, redirect, locals },
-  next
+  next,
 ) => {
   // Rutas públicas
   const publicPaths = [
@@ -25,7 +25,7 @@ export const onRequest: MiddlewareHandler = async (
   // Rutas protegidas
   const protectedPaths = ['/app', '/admin'];
   const isProtected = protectedPaths.some((path) =>
-    url.pathname.startsWith(path)
+    url.pathname.startsWith(path),
   );
 
   if (!isProtected) {

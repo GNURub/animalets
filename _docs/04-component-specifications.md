@@ -154,7 +154,7 @@ export default function BookingWizard({ userId }) {
           date: selectedDate,
           duration: selectedService.duration_minutes,
         },
-      }
+      },
     );
 
     if (!error) {
@@ -190,9 +190,9 @@ export default function BookingWizard({ userId }) {
   }
 
   return (
-    <div class='booking-wizard'>
+    <div class="booking-wizard">
       {/* Progress bar */}
-      <div class='progress-bar'>
+      <div class="progress-bar">
         {[1, 2, 3, 4].map((s) => (
           <div class={`step ${s <= step ? 'active' : ''}`}>Paso {s}</div>
         ))}
@@ -200,17 +200,18 @@ export default function BookingWizard({ userId }) {
 
       {/* Paso 1: Seleccionar Mascota */}
       {step === 1 && (
-        <div class='step-content'>
+        <div class="step-content">
           <h2>Selecciona tu mascota</h2>
-          <div class='pets-grid'>
+          <div class="pets-grid">
             {pets.map((pet) => (
               <div
                 key={pet.id}
-                class='pet-card'
+                class="pet-card"
                 onClick={() => {
                   setSelectedPet(pet);
                   setStep(2);
-                }}>
+                }}
+              >
                 <img src={pet.photo_url || '/default-pet.png'} alt={pet.name} />
                 <h3>{pet.name}</h3>
                 <p>
@@ -220,8 +221,9 @@ export default function BookingWizard({ userId }) {
             ))}
           </div>
           <button
-            class='btn-secondary'
-            onClick={() => (window.location.href = '/app/mascotas')}>
+            class="btn-secondary"
+            onClick={() => (window.location.href = '/app/mascotas')}
+          >
             + Añadir nueva mascota
           </button>
         </div>
@@ -229,27 +231,28 @@ export default function BookingWizard({ userId }) {
 
       {/* Paso 2: Seleccionar Servicio */}
       {step === 2 && (
-        <div class='step-content'>
+        <div class="step-content">
           <h2>Selecciona el servicio</h2>
-          <div class='services-grid'>
+          <div class="services-grid">
             {services.map((service) => (
               <div
                 key={service.id}
-                class='service-card'
+                class="service-card"
                 onClick={() => {
                   setSelectedService(service);
                   setStep(3);
-                }}>
+                }}
+              >
                 <h3>{service.name}</h3>
                 <p>{service.description}</p>
-                <div class='service-details'>
+                <div class="service-details">
                   <span>⏱️ {service.duration_minutes} min</span>
-                  <span class='price'>€{service.price}</span>
+                  <span class="price">€{service.price}</span>
                 </div>
               </div>
             ))}
           </div>
-          <button class='btn-secondary' onClick={() => setStep(1)}>
+          <button class="btn-secondary" onClick={() => setStep(1)}>
             ← Atrás
           </button>
         </div>
@@ -257,11 +260,11 @@ export default function BookingWizard({ userId }) {
 
       {/* Paso 3: Seleccionar Fecha y Hora */}
       {step === 3 && (
-        <div class='step-content'>
+        <div class="step-content">
           <h2>Selecciona fecha y hora</h2>
 
           <input
-            type='date'
+            type="date"
             value={selectedDate}
             min={new Date().toISOString().split('T')[0]}
             onChange={(e) => setSelectedDate(e.target.value)}
@@ -270,12 +273,13 @@ export default function BookingWizard({ userId }) {
           {loading && <p>Cargando horarios disponibles...</p>}
 
           {availableSlots.length > 0 && (
-            <div class='time-slots'>
+            <div class="time-slots">
               {availableSlots.map((slot) => (
                 <button
                   key={slot}
                   class={`time-slot ${selectedTime === slot ? 'selected' : ''}`}
-                  onClick={() => setSelectedTime(slot)}>
+                  onClick={() => setSelectedTime(slot)}
+                >
                   {slot}
                 </button>
               ))}
@@ -283,23 +287,24 @@ export default function BookingWizard({ userId }) {
           )}
 
           {selectedDate && availableSlots.length === 0 && !loading && (
-            <p class='no-slots'>No hay horarios disponibles para esta fecha</p>
+            <p class="no-slots">No hay horarios disponibles para esta fecha</p>
           )}
 
           <textarea
-            placeholder='Notas adicionales (opcional)'
+            placeholder="Notas adicionales (opcional)"
             value={notes}
             onInput={(e) => setNotes(e.target.value)}
           />
 
-          <div class='actions'>
-            <button class='btn-secondary' onClick={() => setStep(2)}>
+          <div class="actions">
+            <button class="btn-secondary" onClick={() => setStep(2)}>
               ← Atrás
             </button>
             <button
-              class='btn-primary'
+              class="btn-primary"
               disabled={!selectedTime}
-              onClick={() => setStep(4)}>
+              onClick={() => setStep(4)}
+            >
               Continuar →
             </button>
           </div>
@@ -308,45 +313,47 @@ export default function BookingWizard({ userId }) {
 
       {/* Paso 4: Confirmación */}
       {step === 4 && (
-        <div class='step-content confirmation'>
+        <div class="step-content confirmation">
           <h2>Confirma tu reserva</h2>
 
-          <div class='summary'>
-            <div class='summary-item'>
+          <div class="summary">
+            <div class="summary-item">
               <strong>Mascota:</strong> {selectedPet.name}
             </div>
-            <div class='summary-item'>
+            <div class="summary-item">
               <strong>Servicio:</strong> {selectedService.name}
             </div>
-            <div class='summary-item'>
+            <div class="summary-item">
               <strong>Fecha:</strong> {selectedDate}
             </div>
-            <div class='summary-item'>
+            <div class="summary-item">
               <strong>Hora:</strong> {selectedTime}
             </div>
-            <div class='summary-item'>
+            <div class="summary-item">
               <strong>Precio:</strong> €{selectedService.price}
             </div>
             {notes && (
-              <div class='summary-item'>
+              <div class="summary-item">
                 <strong>Notas:</strong> {notes}
               </div>
             )}
           </div>
 
-          {error && <p class='error'>{error}</p>}
+          {error && <p class="error">{error}</p>}
 
-          <div class='actions'>
+          <div class="actions">
             <button
-              class='btn-secondary'
+              class="btn-secondary"
               onClick={() => setStep(3)}
-              disabled={loading}>
+              disabled={loading}
+            >
               ← Atrás
             </button>
             <button
-              class='btn-primary'
+              class="btn-primary"
               onClick={handleConfirm}
-              disabled={loading}>
+              disabled={loading}
+            >
               {loading ? 'Confirmando...' : 'Confirmar Reserva'}
             </button>
           </div>
@@ -392,21 +399,21 @@ interface PetManagerState {
 
 ```jsx
 <form onSubmit={handleSubmit}>
-  <input type='text' placeholder='Nombre' required />
-  <input type='text' placeholder='Raza' />
+  <input type="text" placeholder="Nombre" required />
+  <input type="text" placeholder="Raza" />
   <select required>
-    <option value='pequeño'>Pequeño</option>
-    <option value='mediano'>Mediano</option>
-    <option value='grande'>Grande</option>
+    <option value="pequeño">Pequeño</option>
+    <option value="mediano">Mediano</option>
+    <option value="grande">Grande</option>
   </select>
-  <input type='number' placeholder='Peso (kg)' />
-  <input type='date' placeholder='Fecha de nacimiento' />
+  <input type="number" placeholder="Peso (kg)" />
+  <input type="date" placeholder="Fecha de nacimiento" />
   <select>
-    <option value='macho'>Macho</option>
-    <option value='hembra'>Hembra</option>
+    <option value="macho">Macho</option>
+    <option value="hembra">Hembra</option>
   </select>
-  <textarea placeholder='Notas especiales' />
-  <button type='submit'>Guardar</button>
+  <textarea placeholder="Notas especiales" />
+  <button type="submit">Guardar</button>
 </form>
 ```
 
@@ -454,7 +461,7 @@ useEffect(() => {
       (payload) => {
         setStatus(payload.new.status);
         setFinalPhotoUrl(payload.new.final_photo_url);
-      }
+      },
     )
     .subscribe();
 
@@ -511,12 +518,12 @@ useEffect(() => {
 ```jsx
 {
   status === 'completed' && (
-    <div class='completed'>
+    <div class="completed">
       <h2>🎉 ¡Listo!</h2>
       <p>Tu mascota está lista para ser recogida</p>
       {finalPhotoUrl && (
-        <div class='final-photo'>
-          <img src={finalPhotoUrl} alt='Foto final' />
+        <div class="final-photo">
+          <img src={finalPhotoUrl} alt="Foto final" />
           <button onClick={() => downloadPhoto(finalPhotoUrl)}>
             📥 Descargar foto
           </button>
@@ -615,17 +622,17 @@ const columns = [
 #### Tarjeta de Cita
 
 ```jsx
-<div class='appointment-card' draggable>
-  <div class='card-header'>
-    <span class='time'>10:30</span>
-    <span class='duration'>90 min</span>
+<div class="appointment-card" draggable>
+  <div class="card-header">
+    <span class="time">10:30</span>
+    <span class="duration">90 min</span>
   </div>
-  <div class='card-body'>
+  <div class="card-body">
     <h3>🐕 Max</h3>
     <p>Cliente: Juan Pérez</p>
     <p>Servicio: Corte Completo</p>
   </div>
-  <div class='card-actions'>
+  <div class="card-actions">
     <button onClick={() => openDetails(appointment)}>Ver detalles</button>
     <button onClick={() => openPhotoUpload(appointment)}>📸 Subir foto</button>
   </div>
@@ -715,16 +722,16 @@ async function handlePhotoUpload(file, appointmentId) {
 #### UI
 
 ```jsx
-<div class='photo-uploader'>
+<div class="photo-uploader">
   <input
-    type='file'
-    accept='image/*'
+    type="file"
+    accept="image/*"
     onChange={(e) => setFile(e.target.files[0])}
   />
 
   {file && (
-    <div class='preview'>
-      <img src={URL.createObjectURL(file)} alt='Preview' />
+    <div class="preview">
+      <img src={URL.createObjectURL(file)} alt="Preview" />
     </div>
   )}
 
@@ -749,7 +756,12 @@ interface Props {
   disabled?: boolean;
 }
 
-const { variant = 'primary', size = 'md', type = 'button', disabled = false } = Astro.props;
+const {
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  disabled = false,
+} = Astro.props;
 
 const classes = `btn btn-${variant} btn-${size}`;
 ---
@@ -760,7 +772,7 @@ const classes = `btn btn-${variant} btn-${size}`;
 
 <style>
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition;
+    @apply rounded-lg px-4 py-2 font-medium transition;
   }
 
   .btn-primary {
@@ -776,15 +788,15 @@ const classes = `btn btn-${variant} btn-${size}`;
   }
 
   .btn-sm {
-    @apply text-sm px-3 py-1;
+    @apply px-3 py-1 text-sm;
   }
 
   .btn-lg {
-    @apply text-lg px-6 py-3;
+    @apply px-6 py-3 text-lg;
   }
 
   .btn:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply cursor-not-allowed opacity-50;
   }
 </style>
 ```
@@ -812,7 +824,7 @@ const { title, padding = 'md' } = Astro.props;
 
 <style>
   .card {
-    @apply bg-white rounded-lg shadow-md;
+    @apply rounded-lg bg-white shadow-md;
   }
 
   .card-padding-sm {
@@ -828,7 +840,7 @@ const { title, padding = 'md' } = Astro.props;
   }
 
   .card-title {
-    @apply text-xl font-bold mb-4;
+    @apply mb-4 text-xl font-bold;
   }
 </style>
 ```
@@ -853,15 +865,15 @@ export default function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
 
   return (
-    <div class='modal-overlay' onClick={onClose}>
-      <div class='modal-content' onClick={(e) => e.stopPropagation()}>
-        <div class='modal-header'>
+    <div class="modal-overlay" onClick={onClose}>
+      <div class="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div class="modal-header">
           <h2>{title}</h2>
-          <button class='close-btn' onClick={onClose}>
+          <button class="close-btn" onClick={onClose}>
             ×
           </button>
         </div>
-        <div class='modal-body'>{children}</div>
+        <div class="modal-body">{children}</div>
       </div>
     </div>
   );
@@ -870,15 +882,15 @@ export default function Modal({ isOpen, onClose, title, children }) {
 
 ```css
 .modal-overlay {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  @apply bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black;
 }
 
 .modal-content {
-  @apply bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto;
+  @apply max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg bg-white;
 }
 
 .modal-header {
-  @apply flex justify-between items-center p-6 border-b;
+  @apply flex items-center justify-between border-b p-6;
 }
 
 .close-btn {

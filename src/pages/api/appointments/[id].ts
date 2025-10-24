@@ -43,7 +43,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         services(name, duration_minutes, price),
         pets(name, species, breed),
         profiles(full_name, email, phone)
-      `
+      `,
       )
       .single();
 

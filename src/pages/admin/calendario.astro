@@ -3,6 +3,7 @@ import AdminCalendar from '../../components/AdminCalendar';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
 const { supabase } = Astro.locals;
+if (!supabase) return Astro.redirect('/signin');
 
 // Obtener todas las citas del mes actual
 const now = new Date();
@@ -37,7 +38,7 @@ const { data: services } = await supabase
 
 <AdminLayout title='Calendario de Citas'>
   <div class='mb-8'>
-    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Calendario de Citas</h1>
+    <h1 class='mb-2 text-3xl font-bold text-gray-900'>Calendario de Citas</h1>
     <p class='text-gray-600'>Vista mensual de todas las reservas</p>
   </div>
 

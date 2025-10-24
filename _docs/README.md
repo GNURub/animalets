@@ -9,7 +9,6 @@ Bienvenido a la documentación completa del proyecto **Animalets**, una aplicaci
 ### Documentos Principales
 
 1. **[00-project-overview.md](00-project-overview.md)** - Resumen Ejecutivo
-
    - Visión del proyecto
    - Stack tecnológico
    - Componentes principales
@@ -17,7 +16,6 @@ Bienvenido a la documentación completa del proyecto **Animalets**, una aplicaci
    - Roadmap general
 
 2. **[01-technical-architecture.md](01-technical-architecture.md)** - Arquitectura Técnica
-
    - Arquitectura general (MPA + Islands)
    - Flujo de peticiones HTTP
    - Estructura de componentes
@@ -27,7 +25,6 @@ Bienvenido a la documentación completa del proyecto **Animalets**, una aplicaci
    - Edge Functions
 
 3. **[02-database-schema.md](02-database-schema.md)** - Esquema de Base de Datos
-
    - Diagrama ER
    - Definición de todas las tablas
    - Row Level Security (RLS)
@@ -36,7 +33,6 @@ Bienvenido a la documentación completa del proyecto **Animalets**, una aplicaci
    - Migración SQL completa
 
 4. **[03-api-endpoints.md](03-api-endpoints.md)** - API y Edge Functions
-
    - API Routes de Astro
    - Endpoints de autenticación ✅
    - Endpoints de citas
@@ -45,7 +41,6 @@ Bienvenido a la documentación completa del proyecto **Animalets**, una aplicaci
    - Edge Function: notificaciones (opcional)
 
 5. **[04-component-specifications.md](04-component-specifications.md)** - Especificaciones de Componentes
-
    - Islas interactivas del portal cliente
      - `BookingWizard` (Asistente de reserva)
      - `PetManager` (Gestor de mascotas)

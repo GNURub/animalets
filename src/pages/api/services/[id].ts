@@ -71,7 +71,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     if (appointments && appointments.length > 0) {
       return new Response(
         'No se puede eliminar un servicio con citas asociadas',
-        { status: 400 }
+        { status: 400 },
       );
     }
 

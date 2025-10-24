@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (start_time >= end_time) {
       return new Response(
         'La hora de inicio debe ser antes que la hora de fin',
-        { status: 400 }
+        { status: 400 },
       );
     }
 

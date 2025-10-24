@@ -3,6 +3,7 @@ import TodayKanban from '../../components/TodayKanban';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
 const { supabase } = Astro.locals;
+if (!supabase) return Astro.redirect('/signin');
 
 // Obtener las citas de hoy
 const today = new Date().toISOString().split('T')[0];
@@ -44,7 +45,7 @@ const stats = {
 
 <AdminLayout title='Citas de Hoy'>
   <div class='mb-8'>
-    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Citas de Hoy</h1>
+    <h1 class='mb-2 text-3xl font-bold text-gray-900'>Citas de Hoy</h1>
     <p class='text-gray-600'>
       {
         new Date().toLocaleDateString('es-ES', {
@@ -58,7 +59,7 @@ const stats = {
   </div>
 
   <!-- Estadísticas -->
-  <div class='grid grid-cols-2 md:grid-cols-6 gap-4 mb-8'>
+  <div class='mb-8 grid grid-cols-2 gap-4 md:grid-cols-6'>
     <div class='card text-center'>
       <div class='text-2xl font-bold text-gray-900'>{stats.total}</div>
       <div class='text-sm text-gray-600'>Total</div>

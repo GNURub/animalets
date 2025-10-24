@@ -569,7 +569,7 @@ import { supabase } from '../lib/supabase';
 
 export const onRequest: MiddlewareHandler = async (
   { cookies, url, redirect, locals },
-  next
+  next,
 ) => {
   // Rutas públicas
   const publicPaths = [
@@ -686,17 +686,17 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} | Animalets</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-</head>
-<body>
-  <slot />
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | Animalets</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <slot />
+  </body>
 </html>
 ```
 
@@ -741,7 +741,7 @@ const { title } = Astro.props;
   }
 
   .app-nav {
-    @apply bg-blue-600 text-white p-4 flex gap-4 items-center;
+    @apply flex items-center gap-4 bg-blue-600 p-4 text-white;
   }
 
   .app-nav a {
@@ -749,7 +749,7 @@ const { title } = Astro.props;
   }
 
   .app-main {
-    @apply flex-1 container mx-auto p-6;
+    @apply container mx-auto flex-1 p-6;
   }
 </style>
 ```
@@ -810,23 +810,31 @@ const { data: pets } = await supabase
   <section>
     <h2>Próximas Citas</h2>
     {appointments?.length === 0 && <p>No tienes citas próximas</p>}
-    {appointments?.map(apt => (
-      <div class="appointment-card">
-        <p>{apt.date} - {apt.start_time}</p>
-        <p>{apt.pet_name} - {apt.service_name}</p>
-        <p>Estado: {apt.status}</p>
-      </div>
-    ))}
+    {
+      appointments?.map((apt) => (
+        <div class="appointment-card">
+          <p>
+            {apt.date} - {apt.start_time}
+          </p>
+          <p>
+            {apt.pet_name} - {apt.service_name}
+          </p>
+          <p>Estado: {apt.status}</p>
+        </div>
+      ))
+    }
   </section>
 
   <section>
     <h2>Mis Mascotas</h2>
-    {pets?.map(pet => (
-      <div class="pet-card">
-        <img src={pet.photo_url || '/default-pet.png'} alt={pet.name} />
-        <p>{pet.name}</p>
-      </div>
-    ))}
+    {
+      pets?.map((pet) => (
+        <div class="pet-card">
+          <img src={pet.photo_url || '/default-pet.png'} alt={pet.name} />
+          <p>{pet.name}</p>
+        </div>
+      ))
+    }
     <a href="/app/mascotas">Ver todas</a>
   </section>
 </AppLayout>

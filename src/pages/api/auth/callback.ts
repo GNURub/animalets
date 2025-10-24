@@ -7,8 +7,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   if (!authCode) {
     return redirect(
       `/signin?error=${encodeURIComponent(
-        'No se proporcionó ningún código de autenticación'
-      )}`
+        'No se proporcionó ningún código de autenticación',
+      )}`,
     );
   }
 
@@ -17,8 +17,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   if (error) {
     return redirect(
       `/signin?error=${encodeURIComponent(
-        'Error al iniciar sesión con el proveedor externo'
-      )}`
+        'Error al iniciar sesión con el proveedor externo',
+      )}`,
     );
   }
 

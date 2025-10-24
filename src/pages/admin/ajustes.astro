@@ -3,6 +3,7 @@ import BusinessSettings from '../../components/BusinessSettings';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
 const { supabase } = Astro.locals;
+if (!supabase) return Astro.redirect('/signin');
 
 // Obtener configuración de horarios de negocio
 const { data: businessHours } = await supabase
@@ -22,7 +23,7 @@ const { data: blockedTimes } = await supabase
 
 <AdminLayout title='Ajustes del Negocio'>
   <div class='mb-8'>
-    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Ajustes del Negocio</h1>
+    <h1 class='mb-2 text-3xl font-bold text-gray-900'>Ajustes del Negocio</h1>
     <p class='text-gray-600'>
       Configura horarios de operación y tiempos bloqueados
     </p>

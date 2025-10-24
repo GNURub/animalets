@@ -4,6 +4,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
 
 const { user, profile } = Astro.locals;
 
+if (!user) {
+  return Astro.redirect('/signin');
+}
+
 // Obtener mascotas del usuario
 const { data: pets, error } = await Astro.locals.supabase
   .from('pets')
@@ -17,9 +21,9 @@ if (error) {
 ---
 
 <AppLayout title='Mis Mascotas'>
-  <div class='max-w-7xl mx-auto'>
+  <div class='mx-auto max-w-7xl'>
     <div class='mb-8'>
-      <h1 class='text-3xl font-bold text-gray-900 mb-2'>Mis Mascotas</h1>
+      <h1 class='mb-2 text-3xl font-bold text-gray-900'>Mis Mascotas</h1>
       <p class='text-gray-600'>
         Gestiona la información de tus compañeros peludos
       </p>

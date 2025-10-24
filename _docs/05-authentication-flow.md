@@ -148,7 +148,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       JSON.stringify({
         message: 'Por favor, verifica tu email para activar tu cuenta',
       }),
-      { status: 200 }
+      { status: 200 },
     );
   }
 
@@ -306,7 +306,7 @@ import { supabase } from '../lib/supabase';
 
 export const onRequest: MiddlewareHandler = async (
   { cookies, url, redirect, locals },
-  next
+  next,
 ) => {
   // Rutas públicas
   const publicPaths = [
@@ -325,7 +325,7 @@ export const onRequest: MiddlewareHandler = async (
   // Rutas protegidas
   const protectedPaths = ['/app', '/admin'];
   const isProtected = protectedPaths.some((path) =>
-    url.pathname.startsWith(path)
+    url.pathname.startsWith(path),
   );
 
   if (!isProtected) {

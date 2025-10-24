@@ -304,7 +304,7 @@ function calculateEndTime(startTime: string, durationMinutes: number): string {
   const endMinutes = totalMinutes % 60;
   return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(
     2,
-    '0'
+    '0',
   )}`;
 }
 ```
@@ -505,7 +505,7 @@ serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
     // 1. Obtener día de la semana (0 = Domingo, 1 = Lunes, ...)
@@ -524,7 +524,7 @@ serve(async (req) => {
         {
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
 
@@ -551,7 +551,7 @@ serve(async (req) => {
     const allSlots = generateTimeSlots(
       businessHour.open_time,
       businessHour.close_time,
-      15 // Intervalos de 15 minutos
+      15, // Intervalos de 15 minutos
     );
 
     // 6. Filtrar slots ocupados
@@ -578,7 +578,7 @@ serve(async (req) => {
           slot,
           slotEnd,
           block.start_time,
-          block.end_time
+          block.end_time,
         );
       });
 
@@ -604,7 +604,7 @@ serve(async (req) => {
 function generateTimeSlots(
   start: string,
   end: string,
-  intervalMinutes: number
+  intervalMinutes: number,
 ): string[] {
   const slots: string[] = [];
   let current = start;
@@ -624,7 +624,7 @@ function addMinutes(time: string, minutes: number): string {
   const newMins = totalMinutes % 60;
   return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(
     2,
-    '0'
+    '0',
   )}`;
 }
 
@@ -632,7 +632,7 @@ function timeRangesOverlap(
   start1: string,
   end1: string,
   start2: string,
-  end2: string
+  end2: string,
 ): boolean {
   return start1 < end2 && end1 > start2;
 }

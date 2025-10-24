@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       (currentHour === endHour && currentMin < endMin)
     ) {
       const timeString = `${String(currentHour).padStart(2, '0')}:${String(
-        currentMin
+        currentMin,
       ).padStart(2, '0')}`;
 
       // Verificar si hay suficiente tiempo antes del cierre
@@ -76,7 +76,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const hasAppointment =
           existingAppointments?.some((apt) => {
             const aptTime = apt.scheduled_time;
-            const aptDuration = apt.services?.duration_minutes || 60;
+            // services es un objeto, no un array
+            const aptDuration = (apt.services as any)?.duration_minutes || 60;
             const aptEndMinutes =
               parseInt(aptTime.split(':')[0]) * 60 +
               parseInt(aptTime.split(':')[1]) +

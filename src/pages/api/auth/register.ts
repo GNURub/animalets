@@ -11,7 +11,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (!email || !password) {
     return redirect(
       '/register?error=' +
-        encodeURIComponent('Email y contraseña son requeridos')
+        encodeURIComponent('Email y contraseña son requeridos'),
     );
   }
 
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (password.length < 8) {
     return redirect(
       '/register?error=' +
-        encodeURIComponent('La contraseña debe tener al menos 8 caracteres')
+        encodeURIComponent('La contraseña debe tener al menos 8 caracteres'),
     );
   }
 
@@ -50,8 +50,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(
       '/signin?message=' +
         encodeURIComponent(
-          'Por favor, verifica tu email para activar tu cuenta'
-        )
+          'Por favor, verifica tu email para activar tu cuenta',
+        ),
     );
   }
 

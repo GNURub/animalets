@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           service_id,
           duration: service.duration_minutes,
         }),
-      }
+      },
     );
 
     if (verifyResponse.ok) {
@@ -69,7 +69,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const endHours = Math.floor(endMinutes / 60);
     const endMins = endMinutes % 60;
     const end_time = `${String(endHours).padStart(2, '0')}:${String(
-      endMins
+      endMins,
     ).padStart(2, '0')}`;
 
     // Crear la cita
@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         services(name, price, duration_minutes),
         pets(name, species),
         profiles(full_name, email, phone)
-      `
+      `,
       )
       .single();
 
@@ -129,7 +129,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
         services(name, price, duration_minutes),
         pets(name, species, breed),
         profiles(full_name, email, phone)
-      `
+      `,
       )
       .eq('user_id', user.id)
       .order('scheduled_date', { ascending: true })

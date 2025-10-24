@@ -254,7 +254,7 @@ Las islas son **independientes** por diseño, pero pueden comunicarse:
 window.dispatchEvent(
   new CustomEvent('pet-updated', {
     detail: { petId: 123 },
-  })
+  }),
 );
 
 // Isla B escucha
@@ -320,11 +320,11 @@ import { supabase } from '../lib/supabase';
 
 export const onRequest: MiddlewareHandler = async (
   { cookies, url, redirect },
-  next
+  next,
 ) => {
   const protectedPaths = ['/app', '/admin'];
   const isProtected = protectedPaths.some((path) =>
-    url.pathname.startsWith(path)
+    url.pathname.startsWith(path),
   );
 
   if (!isProtected) return next();
@@ -429,7 +429,7 @@ export default function RealtimeTracker({ appointmentId }) {
         (payload) => {
           setStatus(payload.new.status);
           setPhotoUrl(payload.new.final_photo_url);
-        }
+        },
       )
       .subscribe();
 
@@ -452,9 +452,9 @@ export default function RealtimeTracker({ appointmentId }) {
   }
 
   return (
-    <div class='tracker'>
+    <div class="tracker">
       <StatusIndicator status={status} />
-      {photoUrl && <img src={photoUrl} alt='Resultado final' />}
+      {photoUrl && <img src={photoUrl} alt="Resultado final" />}
     </div>
   );
 }
@@ -500,7 +500,7 @@ serve(async (req) => {
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
   // 1. Obtener horario del día
@@ -554,11 +554,11 @@ serve(async (req) => {
 /* Componentes personalizados */
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition;
+    @apply bg-primary rounded-lg px-4 py-2 text-white transition hover:bg-blue-600;
   }
 
   .card {
-    @apply bg-white shadow-md rounded-lg p-6;
+    @apply rounded-lg bg-white p-6 shadow-md;
   }
 }
 ```

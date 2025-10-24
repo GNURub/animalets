@@ -265,7 +265,6 @@ vercel
 1. Ve a tu proyecto en [vercel.com](https://vercel.com)
 2. Ve a **Settings** → **Environment Variables**
 3. Agrega las siguientes variables:
-
    - `PUBLIC_SUPABASE_URL`
    - `PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`

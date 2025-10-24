@@ -4,6 +4,10 @@ import { supabase } from '../../lib/supabase';
 
 const { user } = Astro.locals;
 
+if (!user) {
+  return Astro.redirect('/signin');
+}
+
 // Obtener próximas citas
 const { data: appointments } = await supabase
   .from('appointments')
@@ -38,46 +42,46 @@ const statusLabels = {
 ---
 
 <AppLayout title='Dashboard'>
-  <div class='max-w-6xl mx-auto'>
+  <div class='mx-auto max-w-6xl'>
     <!-- Bienvenida -->
     <div class='mb-8'>
-      <h1 class='text-3xl font-bold text-gray-900 mb-2'>
+      <h1 class='mb-2 text-3xl font-bold text-gray-900'>
         Bienvenido de vuelta! 👋
       </h1>
       <p class='text-gray-600'>Gestiona tus mascotas y citas desde aquí</p>
     </div>
 
     <!-- Acciones Rápidas -->
-    <div class='grid md:grid-cols-3 gap-6 mb-8'>
+    <div class='mb-8 grid gap-6 md:grid-cols-3'>
       <a href='/app/reservar' class='card-hover text-center'>
-        <div class='text-4xl mb-3'>📅</div>
-        <h3 class='font-semibold text-lg mb-1'>Reservar Cita</h3>
+        <div class='mb-3 text-4xl'>📅</div>
+        <h3 class='mb-1 text-lg font-semibold'>Reservar Cita</h3>
         <p class='text-sm text-gray-600'>Agenda una nueva cita</p>
       </a>
 
       <a href='/app/mascotas' class='card-hover text-center'>
-        <div class='text-4xl mb-3'>🐕</div>
-        <h3 class='font-semibold text-lg mb-1'>Mis Mascotas</h3>
+        <div class='mb-3 text-4xl'>🐕</div>
+        <h3 class='mb-1 text-lg font-semibold'>Mis Mascotas</h3>
         <p class='text-sm text-gray-600'>Gestiona tus mascotas</p>
       </a>
 
-      <div class='card-hover text-center cursor-default'>
-        <div class='text-4xl mb-3'>💰</div>
-        <h3 class='font-semibold text-lg mb-1'>Estadísticas</h3>
+      <div class='card-hover cursor-default text-center'>
+        <div class='mb-3 text-4xl'>💰</div>
+        <h3 class='mb-1 text-lg font-semibold'>Estadísticas</h3>
         <p class='text-sm text-gray-600'>
           {pets?.length || 0} mascotas registradas
         </p>
       </div>
     </div>
 
-    <div class='grid lg:grid-cols-2 gap-8'>
+    <div class='grid gap-8 lg:grid-cols-2'>
       <!-- Próximas Citas -->
       <div>
-        <div class='flex items-center justify-between mb-4'>
+        <div class='mb-4 flex items-center justify-between'>
           <h2 class='text-2xl font-bold text-gray-900'>Próximas Citas</h2>
           <a
             href='/app/reservar'
-            class='text-blue-600 hover:text-blue-700 text-sm font-medium'>
+            class='text-sm font-medium text-blue-600 hover:text-blue-700'>
             Nueva cita →
           </a>
         </div>
@@ -89,9 +93,9 @@ const statusLabels = {
                 <div class='card'>
                   <div class='flex items-start justify-between'>
                     <div class='flex-1'>
-                      <div class='flex items-center gap-2 mb-2'>
+                      <div class='mb-2 flex items-center gap-2'>
                         <span class='text-2xl'>🐕</span>
-                        <h3 class='font-semibold text-lg'>{apt.pet.name}</h3>
+                        <h3 class='text-lg font-semibold'>{apt.pet.name}</h3>
                         <span class={`badge badge-${apt.status}`}>
                           {
                             statusLabels[
@@ -100,10 +104,10 @@ const statusLabels = {
                           }
                         </span>
                       </div>
-                      <p class='text-sm text-gray-600 mb-1'>
+                      <p class='mb-1 text-sm text-gray-600'>
                         <strong>Servicio:</strong> {apt.service.name}
                       </p>
-                      <p class='text-sm text-gray-600 mb-1'>
+                      <p class='mb-1 text-sm text-gray-600'>
                         <strong>Fecha:</strong>{' '}
                         {new Date(apt.date).toLocaleDateString('es-ES', {
                           weekday: 'long',
@@ -123,7 +127,7 @@ const statusLabels = {
                       {apt.status === 'pending' && (
                         <a
                           href={`/app/tracker/${apt.id}`}
-                          class='text-sm text-blue-600 hover:text-blue-700 mt-2 inline-block'>
+                          class='mt-2 inline-block text-sm text-blue-600 hover:text-blue-700'>
                           Ver tracker →
                         </a>
                       )}
@@ -133,12 +137,12 @@ const statusLabels = {
               ))}
             </div>
           ) : (
-            <div class='card text-center py-8'>
-              <div class='text-6xl mb-4'>📭</div>
-              <h3 class='text-xl font-semibold mb-2'>
+            <div class='card py-8 text-center'>
+              <div class='mb-4 text-6xl'>📭</div>
+              <h3 class='mb-2 text-xl font-semibold'>
                 No tienes citas próximas
               </h3>
-              <p class='text-gray-600 mb-4'>
+              <p class='mb-4 text-gray-600'>
                 ¿Listo para agendar la próxima visita de tu mascota?
               </p>
               <a href='/app/reservar' class='btn btn-primary'>
@@ -151,26 +155,26 @@ const statusLabels = {
 
       <!-- Mis Mascotas -->
       <div>
-        <div class='flex items-center justify-between mb-4'>
+        <div class='mb-4 flex items-center justify-between'>
           <h2 class='text-2xl font-bold text-gray-900'>Mis Mascotas</h2>
           <a
             href='/app/mascotas'
-            class='text-blue-600 hover:text-blue-700 text-sm font-medium'>
+            class='text-sm font-medium text-blue-600 hover:text-blue-700'>
             Ver todas →
           </a>
         </div>
 
         {
           pets && pets.length > 0 ? (
-            <div class='grid sm:grid-cols-2 gap-4'>
+            <div class='grid gap-4 sm:grid-cols-2'>
               {pets.map((pet: any) => (
                 <div class='card-hover'>
                   <div class='flex items-center gap-4'>
-                    <div class='w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-3xl'>
+                    <div class='flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-blue-400 to-purple-400 text-3xl'>
                       🐕
                     </div>
                     <div class='flex-1'>
-                      <h3 class='font-semibold text-lg'>{pet.name}</h3>
+                      <h3 class='text-lg font-semibold'>{pet.name}</h3>
                       <p class='text-sm text-gray-600'>
                         {pet.breed || 'Sin raza'} • {pet.size}
                       </p>
@@ -180,12 +184,12 @@ const statusLabels = {
               ))}
             </div>
           ) : (
-            <div class='card text-center py-8'>
-              <div class='text-6xl mb-4'>🐾</div>
-              <h3 class='text-xl font-semibold mb-2'>
+            <div class='card py-8 text-center'>
+              <div class='mb-4 text-6xl'>🐾</div>
+              <h3 class='mb-2 text-xl font-semibold'>
                 No tienes mascotas registradas
               </h3>
-              <p class='text-gray-600 mb-4'>
+              <p class='mb-4 text-gray-600'>
                 Añade tu primera mascota para poder reservar citas
               </p>
               <a href='/app/mascotas' class='btn btn-primary'>

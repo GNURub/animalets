@@ -3,6 +3,7 @@ import ServiceManager from '../../components/ServiceManager';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
 const { supabase } = Astro.locals;
+if (!supabase) return Astro.redirect('/signin');
 
 // Obtener todos los servicios
 const { data: services } = await supabase
@@ -13,7 +14,7 @@ const { data: services } = await supabase
 
 <AdminLayout title='Gestión de Servicios'>
   <div class='mb-8'>
-    <h1 class='text-3xl font-bold text-gray-900 mb-2'>Gestión de Servicios</h1>
+    <h1 class='mb-2 text-3xl font-bold text-gray-900'>Gestión de Servicios</h1>
     <p class='text-gray-600'>
       Administra los servicios de peluquería ofrecidos
     </p>

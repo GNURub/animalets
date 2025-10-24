@@ -10,40 +10,42 @@ const { title } = Astro.props;
 ---
 
 <Layout title={title}>
-  <div class='min-h-screen flex flex-col'>
+  <div class="flex min-h-screen flex-col">
     <!-- Navegación -->
-    <nav class='bg-blue-600 text-white shadow-lg'>
-      <div class='container mx-auto px-4'>
-        <div class='flex items-center justify-between h-16'>
+    <nav class="bg-blue-600 text-white shadow-lg">
+      <div class="container mx-auto px-4">
+        <div class="flex h-16 items-center justify-between">
           <!-- Logo -->
           <a
-            href='/app/dashboard'
-            class='text-2xl font-bold flex items-center gap-2'>
+            href="/app/dashboard"
+            class="flex items-center gap-2 text-2xl font-bold"
+          >
             🐕 Animalets
           </a>
 
           <!-- Navegación Desktop -->
-          <div class='hidden md:flex items-center gap-6'>
-            <a href='/app/dashboard' class='hover:text-blue-200 transition'>
+          <div class="hidden items-center gap-6 md:flex">
+            <a href="/app/dashboard" class="transition hover:text-blue-200">
               Dashboard
             </a>
-            <a href='/app/mascotas' class='hover:text-blue-200 transition'>
+            <a href="/app/mascotas" class="transition hover:text-blue-200">
               Mis Mascotas
             </a>
-            <a href='/app/reservar' class='hover:text-blue-200 transition'>
+            <a href="/app/reservar" class="transition hover:text-blue-200">
               Reservar Cita
             </a>
           </div>
 
           <!-- Usuario -->
-          <div class='flex items-center gap-4'>
-            <span class='hidden md:block text-sm'>
+          <div class="flex items-center gap-4">
+            <span class="hidden text-sm md:block">
               Hola, {profile?.full_name || profile?.email}
             </span>
-            <form action='/api/auth/signout' method='POST'>
+            <form action="/api/auth/signout" method="POST">
               <button
-                type='submit'
-                class='bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg transition text-sm font-medium'>
+                type="submit"
+                class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium transition hover:bg-blue-800"
+              >
                 Cerrar sesión
               </button>
             </form>
@@ -51,14 +53,14 @@ const { title } = Astro.props;
         </div>
 
         <!-- Navegación Mobile -->
-        <div class='md:hidden pb-4 flex gap-4'>
-          <a href='/app/dashboard' class='text-sm hover:text-blue-200'
+        <div class="flex gap-4 pb-4 md:hidden">
+          <a href="/app/dashboard" class="text-sm hover:text-blue-200"
             >Dashboard</a
           >
-          <a href='/app/mascotas' class='text-sm hover:text-blue-200'
+          <a href="/app/mascotas" class="text-sm hover:text-blue-200"
             >Mascotas</a
           >
-          <a href='/app/reservar' class='text-sm hover:text-blue-200'
+          <a href="/app/reservar" class="text-sm hover:text-blue-200"
             >Reservar</a
           >
         </div>
@@ -66,13 +68,13 @@ const { title } = Astro.props;
     </nav>
 
     <!-- Contenido Principal -->
-    <main class='flex-1 container mx-auto px-4 py-8'>
+    <main class="container mx-auto flex-1 px-4 py-8">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class='bg-gray-800 text-white py-6 mt-auto'>
-      <div class='container mx-auto px-4 text-center text-sm'>
+    <footer class="mt-auto bg-gray-800 py-6 text-white">
+      <div class="container mx-auto px-4 text-center text-sm">
         <p>&copy; 2025 Animalets. Todos los derechos reservados.</p>
       </div>
     </footer>

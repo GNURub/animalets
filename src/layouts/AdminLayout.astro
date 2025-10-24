@@ -10,49 +10,51 @@ const { title } = Astro.props;
 ---
 
 <Layout title={title}>
-  <div class='min-h-screen flex flex-col'>
+  <div class="flex min-h-screen flex-col">
     <!-- Navegación Admin -->
-    <nav class='bg-purple-600 text-white shadow-lg'>
-      <div class='container mx-auto px-4'>
-        <div class='flex items-center justify-between h-16'>
+    <nav class="bg-purple-600 text-white shadow-lg">
+      <div class="container mx-auto px-4">
+        <div class="flex h-16 items-center justify-between">
           <!-- Logo -->
-          <a href='/admin' class='text-2xl font-bold flex items-center gap-2'>
+          <a href="/admin" class="flex items-center gap-2 text-2xl font-bold">
             👑 Admin Panel
           </a>
 
           <!-- Navegación Desktop -->
-          <div class='hidden md:flex items-center gap-6'>
-            <a href='/admin' class='hover:text-purple-200 transition'>
+          <div class="hidden items-center gap-6 md:flex">
+            <a href="/admin" class="transition hover:text-purple-200">
               Dashboard
             </a>
             <a
-              href='/admin/calendario'
-              class='hover:text-purple-200 transition'>
+              href="/admin/calendario"
+              class="transition hover:text-purple-200"
+            >
               Calendario
             </a>
-            <a href='/admin/hoy' class='hover:text-purple-200 transition'>
+            <a href="/admin/hoy" class="transition hover:text-purple-200">
               Hoy
             </a>
-            <a href='/admin/servicios' class='hover:text-purple-200 transition'>
+            <a href="/admin/servicios" class="transition hover:text-purple-200">
               Servicios
             </a>
-            <a href='/admin/ajustes' class='hover:text-purple-200 transition'>
+            <a href="/admin/ajustes" class="transition hover:text-purple-200">
               Ajustes
             </a>
           </div>
 
           <!-- Usuario -->
-          <div class='flex items-center gap-4'>
-            <a href='/app/dashboard' class='text-sm hover:text-purple-200'>
+          <div class="flex items-center gap-4">
+            <a href="/app/dashboard" class="text-sm hover:text-purple-200">
               Ver como cliente
             </a>
-            <span class='hidden md:block text-sm'>
+            <span class="hidden text-sm md:block">
               {profile?.full_name || profile?.email}
             </span>
-            <form action='/api/auth/signout' method='POST'>
+            <form action="/api/auth/signout" method="POST">
               <button
-                type='submit'
-                class='bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg transition text-sm font-medium'>
+                type="submit"
+                class="rounded-lg bg-purple-700 px-4 py-2 text-sm font-medium transition hover:bg-purple-800"
+              >
                 Cerrar sesión
               </button>
             </form>
@@ -60,37 +62,37 @@ const { title } = Astro.props;
         </div>
 
         <!-- Navegación Mobile -->
-        <div class='md:hidden pb-4 flex gap-3 text-sm overflow-x-auto'>
-          <a href='/admin' class='hover:text-purple-200 whitespace-nowrap'
+        <div class="flex gap-3 overflow-x-auto pb-4 text-sm md:hidden">
+          <a href="/admin" class="whitespace-nowrap hover:text-purple-200"
             >Dashboard</a
           >
           <a
-            href='/admin/calendario'
-            class='hover:text-purple-200 whitespace-nowrap'>Calendario</a
+            href="/admin/calendario"
+            class="whitespace-nowrap hover:text-purple-200">Calendario</a
           >
-          <a href='/admin/hoy' class='hover:text-purple-200 whitespace-nowrap'
+          <a href="/admin/hoy" class="whitespace-nowrap hover:text-purple-200"
             >Hoy</a
           >
           <a
-            href='/admin/servicios'
-            class='hover:text-purple-200 whitespace-nowrap'>Servicios</a
+            href="/admin/servicios"
+            class="whitespace-nowrap hover:text-purple-200">Servicios</a
           >
           <a
-            href='/admin/ajustes'
-            class='hover:text-purple-200 whitespace-nowrap'>Ajustes</a
+            href="/admin/ajustes"
+            class="whitespace-nowrap hover:text-purple-200">Ajustes</a
           >
         </div>
       </div>
     </nav>
 
     <!-- Contenido Principal -->
-    <main class='flex-1 container mx-auto px-4 py-8'>
+    <main class="container mx-auto flex-1 px-4 py-8">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class='bg-gray-800 text-white py-6 mt-auto'>
-      <div class='container mx-auto px-4 text-center text-sm'>
+    <footer class="mt-auto bg-gray-800 py-6 text-white">
+      <div class="container mx-auto px-4 text-center text-sm">
         <p>&copy; 2025 Animalets Admin. Todos los derechos reservados.</p>
       </div>
     </footer>
