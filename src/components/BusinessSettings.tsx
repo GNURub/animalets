@@ -7,7 +7,7 @@ interface BusinessHour {
   day_of_week: number;
   open_time: string;
   close_time: string;
-  is_open: boolean;
+  is_closed: boolean;
 }
 
 interface BlockedTime {
@@ -175,21 +175,19 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
       <div class="mb-6 flex gap-2">
         <button
           onClick={() => (activeTab.value = 'hours')}
-          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${
-            activeTab.value === 'hours'
+          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${activeTab.value === 'hours'
               ? 'bg-purple-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
+            }`}
         >
           Horarios de Negocio
         </button>
         <button
           onClick={() => (activeTab.value = 'blocked')}
-          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${
-            activeTab.value === 'blocked'
+          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${activeTab.value === 'blocked'
               ? 'bg-purple-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
+            }`}
         >
           Tiempos Bloqueados
         </button>
@@ -211,12 +209,12 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
                     <label class="flex cursor-pointer items-center">
                       <input
                         type="checkbox"
-                        checked={hour.is_open}
+                        checked={!hour.is_closed}
                         onChange={(e) =>
                           updateBusinessHour(
                             hour,
-                            'is_open',
-                            (e.target as HTMLInputElement).checked,
+                            'is_closed',
+                            !(e.target as HTMLInputElement).checked,
                           )
                         }
                         class="form-checkbox mr-2 h-5 w-5 text-purple-600"
@@ -227,7 +225,7 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
                     </label>
                   </div>
 
-                  {hour.is_open ? (
+                  {!hour.is_closed ? (
                     <div class="flex flex-1 items-center gap-4">
                       <div>
                         <label class="mb-1 block text-xs text-gray-600">

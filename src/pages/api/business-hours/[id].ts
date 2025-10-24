@@ -14,13 +14,13 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
   try {
     const body = await request.json();
-    const { day_of_week, open_time, close_time, is_open } = body;
+    const { day_of_week, open_time, close_time, is_closed } = body;
 
     if (
       day_of_week === undefined ||
       !open_time ||
       !close_time ||
-      is_open === undefined
+      is_closed === undefined
     ) {
       return new Response('Faltan campos requeridos', { status: 400 });
     }
@@ -31,7 +31,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
         day_of_week,
         open_time,
         close_time,
-        is_open,
+        is_closed,
       })
       .eq('id', id)
       .select()
