@@ -102,17 +102,19 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
     }
   };
 
-  const proceedToDateSelection = () => {
+  const proceedToNextStep = () => {
     if (selectedServices.value.length === 0) {
       setError('Selecciona al menos un servicio');
       return;
     }
-    currentStep.value = 3;
+    setError(null);
+    currentStep.value = 2;
   };
 
   const selectPet = (pet: Pet) => {
     selectedPet.value = pet;
-    currentStep.value = 2;
+    setError(null);
+    currentStep.value = 3;
   };
 
   const selectDateTime = () => {
@@ -120,6 +122,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
       setError('Selecciona una fecha y hora');
       return;
     }
+    setError(null);
     currentStep.value = 4;
   };
 
@@ -131,12 +134,19 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   };
 
   const submitBooking = async () => {
+    console.log('✅ submitBooking called');
+    console.log('selectedServices:', selectedServices.value);
+    console.log('selectedPet:', selectedPet.value);
+    console.log('selectedDate:', selectedDate.value);
+    console.log('selectedTime:', selectedTime.value);
+
     if (
       selectedServices.value.length === 0 ||
       !selectedPet.value ||
       !selectedDate.value ||
       !selectedTime.value
     ) {
+      console.log('❌ Validation failed');
       setError('Completa todos los pasos');
       return;
     }
@@ -145,29 +155,38 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
     setError(null);
 
     try {
+      const payload = {
+        service_ids: selectedServices.value.map((s) => s.id),
+        pet_id: selectedPet.value.id,
+        scheduled_date: selectedDate.value,
+        scheduled_time: selectedTime.value,
+        notes: notes.value || null,
+      };
+      console.log('📤 Sending payload:', payload);
+
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_ids: selectedServices.value.map((s) => s.id),
-          pet_id: selectedPet.value.id,
-          scheduled_date: selectedDate.value,
-          scheduled_time: selectedTime.value,
-          notes: notes.value || null,
-        }),
+        body: JSON.stringify(payload),
       });
+
+      console.log('📊 Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.log('⚠️ Error response:', errorText);
         throw new Error(errorText || 'Error al crear la reserva');
       }
+
+      const result = await response.json();
+      console.log('✅ Success response:', result);
 
       setSuccess(true);
       setTimeout(() => {
         window.location.href = '/app/dashboard';
       }, 2000);
     } catch (err) {
-      console.error('Error al crear reserva:', err);
+      console.error('❌ Error al crear reserva:', err);
       setError(
         err instanceof Error ? err.message : 'Error al crear la reserva',
       );
@@ -254,8 +273,8 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                   key={service.id}
                   onClick={() => toggleService(service)}
                   class={`card cursor-pointer border-2 text-left transition-all ${isSelected
-                      ? 'border-blue-500 bg-blue-50 shadow-lg'
-                      : 'border-transparent hover:border-blue-500 hover:shadow-lg'
+                    ? 'border-blue-500 bg-blue-50 shadow-lg'
+                    : 'border-transparent hover:border-blue-500 hover:shadow-lg'
                     }`}
                 >
                   <div class="flex items-start gap-3">
@@ -296,7 +315,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                 Duración total: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
               </p>
               <button
-                onClick={proceedToDateSelection}
+                onClick={proceedToNextStep}
                 class="btn btn-primary w-full"
               >
                 Continuar →
@@ -384,10 +403,10 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                       onClick={() => (selectedTime.value = slot.time)}
                       disabled={!slot.available}
                       class={`rounded-lg px-4 py-2 font-medium transition-colors ${!slot.available
-                          ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                          : selectedTime.value === slot.time
-                            ? 'bg-blue-600 text-white'
-                            : 'border-2 border-gray-200 bg-white hover:border-blue-500'
+                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                        : selectedTime.value === slot.time
+                          ? 'bg-blue-600 text-white'
+                          : 'border-2 border-gray-200 bg-white hover:border-blue-500'
                         } `}
                     >
                       {slot.time}
@@ -474,7 +493,10 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
           </div>
 
           <button
-            onClick={submitBooking}
+            onClick={(e) => {
+              console.log('🖱️ Button clicked, e:', e);
+              submitBooking();
+            }}
             disabled={isLoading.value}
             class="btn btn-primary w-full py-4 text-lg"
           >
