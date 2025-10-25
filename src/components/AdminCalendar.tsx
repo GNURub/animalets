@@ -7,6 +7,7 @@ import { useCallback, useMemo, useState } from 'react';
 // @ts-ignore - Calendar works with preact/compat
 import { Calendar, momentLocalizer, type Event, type View } from 'react-big-calendar';
 import '../styles/calendar.css';
+import AdminBookingModal from './AdminBookingModal';
 
 // Configurar moment en español con lunes como primer día
 moment.locale('es', {
@@ -57,6 +58,8 @@ interface CalendarEvent extends Event {
 const showAppointmentModal = signal(false);
 const selectedAppointment = signal<Appointment | null>(null);
 const isEditingDateTime = signal(false);
+const showAdminBookingModal = signal(false);
+const selectedDateForBooking = signal<Date | null>(null);
 
 // @ts-ignore - Preact compat works fine
 const AdminCalendar: FC<AdminCalendarProps> = ({
@@ -89,6 +92,17 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       };
     });
   }, [appointments]);
+
+  // Manejar cita creada desde admin
+  const handleBookingComplete = (newAppointment: Appointment) => {
+    setAppointments(prev => [...prev, newAppointment]);
+  };
+
+  // Abrir modal para crear nueva cita
+  const handleNewAppointmentClick = (date?: Date) => {
+    selectedDateForBooking.value = date || new Date();
+    showAdminBookingModal.value = true;
+  };
 
   // Manejar selección de evento
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
@@ -264,6 +278,18 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
 
   return (
     <div class="space-y-6">
+      {/* Barra de herramientas */}
+      <div class="card flex items-center justify-between">
+        <h2 class="text-xl font-bold">Calendario de Citas</h2>
+        <button
+          onClick={() => handleNewAppointmentClick()}
+          class="btn btn-primary flex items-center gap-2"
+        >
+          <span class="text-lg">➕</span>
+          Nueva Cita
+        </button>
+      </div>
+
       {/* Calendario principal */}
       <div class="card">
         <div style={{ height: '700px' }}>
@@ -484,10 +510,10 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                               onClick={() => setNewTime(slot.time)}
                               disabled={!slot.available}
                               class={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${!slot.available
-                                  ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                                  : newTime === slot.time
-                                    ? 'bg-blue-600 text-white'
-                                    : 'border-2 border-gray-200 bg-white hover:border-blue-500'
+                                ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                : newTime === slot.time
+                                  ? 'bg-blue-600 text-white'
+                                  : 'border-2 border-gray-200 bg-white hover:border-blue-500'
                                 }`}
                             >
                               {slot.time}
@@ -523,6 +549,15 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal para crear nueva cita desde admin */}
+      <AdminBookingModal
+        isOpen={showAdminBookingModal.value}
+        onClose={() => (showAdminBookingModal.value = false)}
+        selectedDate={selectedDateForBooking.value}
+        services={services}
+        onBookingComplete={handleBookingComplete}
+      />
     </div>
   );
 };
