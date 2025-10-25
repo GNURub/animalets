@@ -21,12 +21,18 @@ interface Appointment {
   id: string;
   scheduled_date: string;
   scheduled_time: string;
+  end_time: string;
+  total_duration_minutes: number;
+  total_price: number;
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
-  services: {
-    name: string;
-    duration_minutes: number;
-    price: number;
-  };
+  appointment_services: Array<{
+    order_index: number;
+    services: {
+      name: string;
+      duration_minutes: number;
+      price: number;
+    };
+  }>;
   pets: {
     name: string;
     species: string;
@@ -84,10 +90,15 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       start.setHours(hours, minutes, 0, 0);
 
       const end = new Date(start);
-      end.setMinutes(end.getMinutes() + apt.services.duration_minutes);
+      end.setMinutes(end.getMinutes() + apt.total_duration_minutes);
+
+      const serviceNames = apt.appointment_services
+        .sort((a, b) => a.order_index - b.order_index)
+        .map(ams => ams.services.name)
+        .join(' + ');
 
       return {
-        title: `${apt.pets.name} - ${apt.services.name}`,
+        title: `${apt.pets.name} - ${serviceNames}`,
         start,
         end,
         resource: apt,
@@ -117,13 +128,21 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
   const loadAvailableSlots = async (date: string, appointment: Appointment) => {
     setLoadingSlots(true);
     try {
+      const serviceIds = appointment.appointment_services
+        .sort((a, b) => a.order_index - b.order_index)
+        .map(ams => ams.services);
+
       const response = await fetch('/api/slots/available', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date,
-          service_id: appointment.services.name, // Usamos el nombre ya que no tenemos el ID
-          duration: appointment.services.duration_minutes,
+          service_ids: appointment.appointment_services.map(ams => {
+            // Necesitamos el ID del servicio, pero solo tenemos el nombre
+            // Buscar en la lista de servicios disponibles
+            const serviceInList = services.find(s => s.name === ams.services.name);
+            return serviceInList?.id || '';
+          }).filter(id => id !== ''),
         }),
       });
 
@@ -370,11 +389,18 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
               </div>
 
               <div>
-                <h3 class="mb-1 font-semibold text-gray-700">Servicio</h3>
-                <p class="text-lg">{selectedAppointment.services.name}</p>
-                <p class="text-sm text-gray-600">
-                  {selectedAppointment.services.duration_minutes} min • €
-                  {selectedAppointment.services.price.toFixed(2)}
+                <h3 class="mb-1 font-semibold text-gray-700">Servicios</h3>
+                <div class="space-y-1">
+                  {selectedAppointment.appointment_services
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map((ams, idx) => (
+                      <p key={idx} class="text-sm text-gray-600">
+                        • {ams.services.name} - {ams.services.duration_minutes} min • €{ams.services.price.toFixed(2)}
+                      </p>
+                    ))}
+                </div>
+                <p class="mt-2 text-sm font-semibold text-gray-700">
+                  Total: {selectedAppointment.total_duration_minutes} min • €{selectedAppointment.total_price.toFixed(2)}
                 </p>
               </div>
 

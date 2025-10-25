@@ -30,7 +30,7 @@ interface BookingWizardProps {
 
 const currentStep = signal(1);
 const isLoading = signal(false);
-const selectedService = signal<Service | null>(null);
+const selectedServices = signal<Service[]>([]);
 const selectedPet = signal<Pet | null>(null);
 const selectedDate = signal<string>('');
 const selectedTime = signal<string>('');
@@ -50,7 +50,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   useEffect(() => {
     return () => {
       currentStep.value = 1;
-      selectedService.value = null;
+      selectedServices.value = [];
       selectedPet.value = null;
       selectedDate.value = '';
       selectedTime.value = '';
@@ -58,15 +58,15 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
     };
   }, []);
 
-  // Cargar slots disponibles cuando cambie la fecha o servicio
+  // Cargar slots disponibles cuando cambie la fecha o servicios
   useEffect(() => {
-    if (selectedDate.value && selectedService.value) {
+    if (selectedDate.value && selectedServices.value.length > 0) {
       loadAvailableSlots();
     }
-  }, [selectedDate.value, selectedService.value?.id]);
+  }, [selectedDate.value, selectedServices.value.map((s) => s.id).join(',')]);
 
   const loadAvailableSlots = async () => {
-    if (!selectedDate.value || !selectedService.value) return;
+    if (!selectedDate.value || selectedServices.value.length === 0) return;
 
     loadingSlots.value = true;
     try {
@@ -75,8 +75,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: selectedDate.value,
-          service_id: selectedService.value.id,
-          duration: selectedService.value.duration_minutes,
+          service_ids: selectedServices.value.map((s) => s.id),
         }),
       });
 
@@ -94,14 +93,26 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
     }
   };
 
-  const selectService = (service: Service) => {
-    selectedService.value = service;
-    currentStep.value = 2;
+  const toggleService = (service: Service) => {
+    const index = selectedServices.value.findIndex((s) => s.id === service.id);
+    if (index > -1) {
+      selectedServices.value = selectedServices.value.filter((s) => s.id !== service.id);
+    } else {
+      selectedServices.value = [...selectedServices.value, service];
+    }
+  };
+
+  const proceedToDateSelection = () => {
+    if (selectedServices.value.length === 0) {
+      setError('Selecciona al menos un servicio');
+      return;
+    }
+    currentStep.value = 3;
   };
 
   const selectPet = (pet: Pet) => {
     selectedPet.value = pet;
-    currentStep.value = 3;
+    currentStep.value = 2;
   };
 
   const selectDateTime = () => {
@@ -121,7 +132,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
   const submitBooking = async () => {
     if (
-      !selectedService.value ||
+      selectedServices.value.length === 0 ||
       !selectedPet.value ||
       !selectedDate.value ||
       !selectedTime.value
@@ -138,7 +149,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          service_id: selectedService.value.id,
+          service_ids: selectedServices.value.map((s) => s.id),
           pet_id: selectedPet.value.id,
           scheduled_date: selectedDate.value,
           scheduled_time: selectedTime.value,
@@ -231,34 +242,67 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
         </div>
       )}
 
-      {/* Paso 1: Seleccionar Servicio */}
+      {/* Paso 1: Seleccionar Servicios (Múltiples) */}
       {currentStep.value === 1 && (
         <div class="space-y-4">
-          <h2 class="mb-4 text-2xl font-bold">Selecciona un Servicio</h2>
+          <h2 class="mb-4 text-2xl font-bold">Selecciona Servicios</h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {services.map((service) => (
-              <button
-                key={service.id}
-                onClick={() => selectService(service)}
-                class="card cursor-pointer border-2 border-transparent text-left transition-shadow hover:border-blue-500 hover:shadow-lg"
-              >
-                <h3 class="mb-2 text-xl font-bold">{service.name}</h3>
-                {service.description && (
-                  <p class="mb-4 text-sm text-gray-600">
-                    {service.description}
-                  </p>
-                )}
-                <div class="flex items-center justify-between">
-                  <span class="text-2xl font-bold text-blue-600">
-                    {formatPrice(service.price)}
-                  </span>
-                  <span class="text-sm text-gray-500">
-                    {service.duration_minutes} min
-                  </span>
-                </div>
-              </button>
-            ))}
+            {services.map((service) => {
+              const isSelected = selectedServices.value.some((s) => s.id === service.id);
+              return (
+                <button
+                  key={service.id}
+                  onClick={() => toggleService(service)}
+                  class={`card cursor-pointer border-2 text-left transition-all ${isSelected
+                      ? 'border-blue-500 bg-blue-50 shadow-lg'
+                      : 'border-transparent hover:border-blue-500 hover:shadow-lg'
+                    }`}
+                >
+                  <div class="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      readonly
+                      class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600"
+                    />
+                    <div class="flex-1">
+                      <h3 class="mb-2 text-xl font-bold">{service.name}</h3>
+                      {service.description && (
+                        <p class="mb-4 text-sm text-gray-600">
+                          {service.description}
+                        </p>
+                      )}
+                      <div class="flex items-center justify-between">
+                        <span class="text-2xl font-bold text-blue-600">
+                          {formatPrice(service.price)}
+                        </span>
+                        <span class="text-sm text-gray-500">
+                          {service.duration_minutes} min
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
+
+          {selectedServices.value.length > 0 && (
+            <div class="mt-4 rounded-lg bg-gray-50 p-4">
+              <p class="mb-2 text-sm font-semibold text-gray-700">
+                {selectedServices.value.length} servicio{selectedServices.value.length !== 1 ? 's' : ''} seleccionado{selectedServices.value.length !== 1 ? 's' : ''}
+              </p>
+              <p class="mb-3 text-sm text-gray-600">
+                Duración total: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
+              </p>
+              <button
+                onClick={proceedToDateSelection}
+                class="btn btn-primary w-full"
+              >
+                Continuar →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -339,13 +383,12 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                       key={slot.time}
                       onClick={() => (selectedTime.value = slot.time)}
                       disabled={!slot.available}
-                      class={`rounded-lg px-4 py-2 font-medium transition-colors ${
-                        !slot.available
+                      class={`rounded-lg px-4 py-2 font-medium transition-colors ${!slot.available
                           ? 'cursor-not-allowed bg-gray-100 text-gray-400'
                           : selectedTime.value === slot.time
                             ? 'bg-blue-600 text-white'
                             : 'border-2 border-gray-200 bg-white hover:border-blue-500'
-                      } `}
+                        } `}
                     >
                       {slot.time}
                     </button>
@@ -373,12 +416,23 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
           <div class="card space-y-4">
             <div class="border-b pb-4">
-              <h3 class="mb-1 font-semibold text-gray-700">Servicio</h3>
-              <p class="text-lg font-bold">{selectedService.value?.name}</p>
-              <p class="text-gray-600">
-                {formatPrice(selectedService.value?.price || 0)} •{' '}
-                {selectedService.value?.duration_minutes} min
-              </p>
+              <h3 class="mb-1 font-semibold text-gray-700">Servicios</h3>
+              <div class="space-y-2">
+                {selectedServices.value.map((service) => (
+                  <div key={service.id} class="flex items-center justify-between">
+                    <p class="font-medium">{service.name}</p>
+                    <span class="text-sm text-gray-600">{service.duration_minutes} min</span>
+                  </div>
+                ))}
+              </div>
+              <div class="mt-3 border-t pt-3">
+                <p class="text-sm font-semibold text-gray-700">
+                  Duración total: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
+                </p>
+                <p class="text-lg font-bold text-blue-600">
+                  Total: {formatPrice(selectedServices.value.reduce((sum, s) => sum + s.price, 0))}
+                </p>
+              </div>
             </div>
 
             <div class="border-b pb-4">

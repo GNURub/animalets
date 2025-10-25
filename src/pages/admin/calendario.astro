@@ -18,7 +18,10 @@ const { data: appointments } = await supabase
   .select(
     `
     *,
-    services(name, duration_minutes, price),
+    appointment_services(
+      order_index,
+      services(name, duration_minutes, price)
+    ),
     pets(name, species),
     profiles(full_name, email, phone)
   `

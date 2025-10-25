@@ -15,7 +15,10 @@ const { data: appointments } = await supabase
     `
     *,
     pet:pets(name, breed, size),
-    service:services(name, duration_minutes, price)
+    appointment_services(
+      order_index,
+      services(name, duration_minutes, price)
+    )
   `
   )
   .eq('client_id', user.id)
@@ -105,7 +108,13 @@ const statusLabels = {
                         </span>
                       </div>
                       <p class='mb-1 text-sm text-gray-600'>
-                        <strong>Servicio:</strong> {apt.service.name}
+                        <strong>Servicios:</strong>
+                        {apt.appointment_services
+                          .sort(
+                            (a: any, b: any) => a.order_index - b.order_index
+                          )
+                          .map((ams: any) => ams.services.name)
+                          .join(' + ')}
                       </p>
                       <p class='mb-1 text-sm text-gray-600'>
                         <strong>Fecha:</strong>{' '}
@@ -126,7 +135,7 @@ const statusLabels = {
                     </div>
                     <div class='text-right'>
                       <p class='text-2xl font-bold text-blue-600'>
-                        €{apt.service.price}
+                        €{apt.total_price}
                       </p>
                       {apt.status === 'pending' && (
                         <a

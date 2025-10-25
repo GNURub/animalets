@@ -3,10 +3,34 @@ import type { APIRoute } from 'astro';
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const body = await request.json();
-    const { date, service_id, duration } = body;
+    const { date, service_ids, duration } = body;
 
-    if (!date || !service_id || !duration) {
-      return new Response('Faltan parámetros requeridos', { status: 400 });
+    // Aceptar service_ids (array) o duration (para compatibilidad)
+    if (!date || (!service_ids && !duration)) {
+      return new Response(
+        'Faltan parámetros requeridos (date y service_ids o duration)',
+        { status: 400 },
+      );
+    }
+
+    // Calcular duración total si se proporciona array de service_ids
+    let totalDuration = duration;
+    if (service_ids && Array.isArray(service_ids) && service_ids.length > 0) {
+      // Obtener duraciones de todos los servicios
+      const { data: services } = await locals.supabase
+        .from('services')
+        .select('duration_minutes')
+        .in('id', service_ids);
+
+      if (!services || services.length === 0) {
+        return new Response('Servicios no encontrados', { status: 404 });
+      }
+
+      totalDuration = services.reduce((sum, s) => sum + s.duration_minutes, 0);
+    }
+
+    if (!totalDuration || totalDuration <= 0) {
+      return new Response('Duración inválida', { status: 400 });
     }
 
     // Obtener el día de la semana (0 = domingo, 6 = sábado)
@@ -30,7 +54,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Obtener citas existentes para ese día
     const { data: existingAppointments } = await locals.supabase
       .from('appointments')
-      .select('scheduled_time, services(duration_minutes)')
+      .select('scheduled_time, total_duration_minutes')
       .eq('scheduled_date', date)
       .in('status', ['pending', 'confirmed', 'in_progress']);
 
@@ -122,7 +146,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
 
       // Verificar si hay suficiente tiempo antes del cierre
-      const slotEndMinutes = slotHour * 60 + slotMin + duration;
+      const slotEndMinutes = slotHour * 60 + slotMin + totalDuration;
       const closeMinutes = endHour * 60 + endMin;
 
       if (slotEndMinutes <= closeMinutes) {
