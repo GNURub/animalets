@@ -18,7 +18,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_default_capacity_single
 ON default_capacity((1)) WHERE id IS NOT NULL;
 
 -- Add trigger for updated_at
-CREATE TRIGGER IF NOT EXISTS set_updated_at_default_capacity
+DROP TRIGGER IF EXISTS set_updated_at_default_capacity ON default_capacity;
+CREATE TRIGGER set_updated_at_default_capacity
   BEFORE UPDATE ON default_capacity
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
@@ -54,7 +55,8 @@ CREATE INDEX IF NOT EXISTS idx_staff_schedules_day_time
 ON staff_schedules(day_of_week, start_time, end_time);
 
 -- Add trigger for updated_at
-CREATE TRIGGER IF NOT EXISTS set_updated_at_staff_schedules
+DROP TRIGGER IF EXISTS set_updated_at_staff_schedules ON staff_schedules;
+CREATE TRIGGER set_updated_at_staff_schedules
   BEFORE UPDATE ON staff_schedules
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();

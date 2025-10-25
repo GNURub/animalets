@@ -45,9 +45,21 @@ export const PUT: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // Obtener el ID del registro único
+    const { data: existing, error: getError } = await locals.supabase
+      .from('default_capacity')
+      .select('id')
+      .single();
+
+    if (getError || !existing) {
+      console.error('Error fetching default capacity ID:', getError);
+      return new Response('Configuración no encontrada', { status: 404 });
+    }
+
     const { data, error } = await locals.supabase
       .from('default_capacity')
       .update({ appointments_per_hour })
+      .eq('id', existing.id)
       .select()
       .single();
 
