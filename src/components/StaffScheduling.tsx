@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import toast from 'react-hot-toast';
 
 interface StaffSchedule {
     id: string;
@@ -61,10 +62,12 @@ const StaffScheduling: FunctionalComponent<StaffSchedulingProps> = ({
 
             const data = await response.json();
             setCapacity(data);
-            alert('Cupo por defecto actualizado correctamente');
+            toast.success('Cupo por defecto actualizado correctamente', {
+                id: 'update-default-capacity',
+            });
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al actualizar el cupo por defecto');
+            toast.error('Error al actualizar el cupo por defecto');
         } finally {
             isLoading.value = false;
         }
@@ -73,7 +76,7 @@ const StaffScheduling: FunctionalComponent<StaffSchedulingProps> = ({
     // Crear/actualizar excepción de personal
     const saveSchedule = async () => {
         if (!formData.day_of_week && formData.start_time && formData.end_time) {
-            alert('Por favor completa todos los campos');
+            toast.error('Por favor completa todos los campos');
             return;
         }
 
@@ -113,10 +116,10 @@ const StaffScheduling: FunctionalComponent<StaffSchedulingProps> = ({
             editingSchedule.value = null;
             showScheduleModal.value = false;
 
-            alert(isEdit ? 'Excepción actualizada' : 'Excepción creada');
+            toast.success(isEdit ? 'Excepción actualizada' : 'Excepción creada');
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al guardar la excepción');
+            toast.error('Error al guardar la excepción');
         } finally {
             isLoading.value = false;
         }
@@ -137,10 +140,10 @@ const StaffScheduling: FunctionalComponent<StaffSchedulingProps> = ({
             }
 
             setSchedules(prev => prev.filter(s => s.id !== id));
-            alert('Excepción eliminada');
+            toast.success('Excepción eliminada');
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al eliminar la excepción');
+            toast.error('Error al eliminar la excepción');
         } finally {
             isLoading.value = false;
         }

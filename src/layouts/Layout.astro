@@ -1,4 +1,5 @@
 ---
+import { Toaster } from 'react-hot-toast';
 import '../styles/global.css';
 
 interface Props {
@@ -23,6 +24,7 @@ const {
     <title>{title} | Animalets</title>
   </head>
   <body class='bg-gray-50'>
+    <Toaster client:only />
     <slot />
   </body>
 </html>
