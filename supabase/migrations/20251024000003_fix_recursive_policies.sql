@@ -100,6 +100,10 @@ CREATE POLICY "Admins can view all pets"
   ON pets FOR SELECT
   USING (public.is_admin(auth.uid()));
 
+CREATE POLICY "Admins can create pets"
+  ON pets FOR INSERT
+  WITH CHECK (public.is_admin(auth.uid()));
+
 CREATE POLICY "Admins can update all pets"
   ON pets FOR UPDATE
   USING (public.is_admin(auth.uid()));
@@ -148,6 +152,10 @@ CREATE POLICY "Clients can cancel own pending appointments"
 CREATE POLICY "Admins can view all appointments"
   ON appointments FOR SELECT
   USING (public.is_admin(auth.uid()));
+
+CREATE POLICY "Admins can create appointments"
+  ON appointments FOR INSERT
+  WITH CHECK (public.is_admin(auth.uid()));
 
 CREATE POLICY "Admins can manage all appointments"
   ON appointments FOR ALL
