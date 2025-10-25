@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Pet {
     id: string;
@@ -51,6 +51,8 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
     const [isSearching, setIsSearching] = useState(false);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [creatingPet, setCreatingPet] = useState(false);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [formData, setFormData] = useState<CreatePetData>({
         name: '',
         species: 'dog',
@@ -60,29 +62,46 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
         notes: '',
     });
 
-    // Buscar mascotas
-    const handleSearch = async (q: string) => {
+    // Buscar mascotas con debounce
+    const handleSearch = (q: string) => {
         setSearchQuery(q);
+
+        // Limpiar el timeout anterior
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
 
         if (!q.trim()) {
             setSearchResults([]);
             return;
         }
 
-        setIsSearching(true);
-        try {
-            const response = await fetch(`/api/pets/search?q=${encodeURIComponent(q)}`);
-            if (!response.ok) throw new Error('Error en búsqueda');
+        // Debounce: esperar 300ms sin que el usuario escriba antes de hacer la petición
+        searchTimeoutRef.current = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                const response = await fetch(`/api/pets/search?q=${encodeURIComponent(q)}`);
+                if (!response.ok) throw new Error('Error en búsqueda');
 
-            const results = await response.json();
-            setSearchResults(results);
-        } catch (error) {
-            console.error('Error al buscar mascotas:', error);
-            setSearchResults([]);
-        } finally {
-            setIsSearching(false);
-        }
+                const results = await response.json();
+                setSearchResults(results);
+            } catch (error) {
+                console.error('Error al buscar mascotas:', error);
+                setSearchResults([]);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300);
     };
+
+    // Limpiar timeout al desmontar
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Crear mascota nueva
     const handleCreatePet = async () => {
@@ -143,6 +162,7 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
                     <div>
                         <label class="label">Nombre de la Mascota</label>
                         <input
+                            ref={searchInputRef}
                             type="text"
                             class="input w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
                             placeholder="Ej: Fluffy, Mimi, Rex..."

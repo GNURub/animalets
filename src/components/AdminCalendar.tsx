@@ -1,4 +1,3 @@
-import { signal } from '@preact/signals';
 import moment from 'moment';
 // @ts-ignore - Locale import doesn't have types
 import 'moment/locale/es';
@@ -55,12 +54,6 @@ interface CalendarEvent extends Event {
   resource: Appointment;
 }
 
-const showAppointmentModal = signal(false);
-const selectedAppointment = signal<Appointment | null>(null);
-const isEditingDateTime = signal(false);
-const showAdminBookingModal = signal(false);
-const selectedDateForBooking = signal<Date | null>(null);
-
 // @ts-ignore - Preact compat works fine
 const AdminCalendar: FC<AdminCalendarProps> = ({
   initialAppointments,
@@ -73,6 +66,15 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
   const [newTime, setNewTime] = useState('');
   const [availableSlots, setAvailableSlots] = useState<{ time: string; available: boolean }[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Estados para modal de cita existente
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [isEditingDateTime, setIsEditingDateTime] = useState(false);
+
+  // Estados para modal de crear cita
+  const [showAdminBookingModal, setShowAdminBookingModal] = useState(false);
+  const [selectedDateForBooking, setSelectedDateForBooking] = useState<Date | null>(null);
 
   // Convertir appointments a eventos de react-big-calendar
   const events = useMemo<CalendarEvent[]>(() => {
@@ -100,15 +102,15 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
 
   // Abrir modal para crear nueva cita
   const handleNewAppointmentClick = (date?: Date) => {
-    selectedDateForBooking.value = date || new Date();
-    showAdminBookingModal.value = true;
+    setSelectedDateForBooking(date || new Date());
+    setShowAdminBookingModal(true);
   };
 
   // Manejar selección de evento
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
-    selectedAppointment.value = event.resource;
-    showAppointmentModal.value = true;
-    isEditingDateTime.value = false;
+    setSelectedAppointment(event.resource);
+    setShowAppointmentModal(true);
+    setIsEditingDateTime(false);
   }, []);
 
   // Cargar slots disponibles para cambio de fecha/hora
@@ -157,8 +159,8 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       // Actualizar en la lista local
       setAppointments(prev => prev.map(apt => apt.id === id ? updated : apt));
 
-      if (selectedAppointment.value?.id === id) {
-        selectedAppointment.value = updated;
+      if (selectedAppointment?.id === id) {
+        setSelectedAppointment(updated);
       }
 
       alert('Estado actualizado correctamente');
@@ -170,13 +172,13 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
 
   // Cambiar fecha/hora de cita
   const updateAppointmentDateTime = async () => {
-    if (!selectedAppointment.value || !newDate || !newTime) {
+    if (!selectedAppointment || !newDate || !newTime) {
       alert('Selecciona fecha y hora');
       return;
     }
 
     try {
-      const response = await fetch(`/api/appointments/${selectedAppointment.value.id}`, {
+      const response = await fetch(`/api/appointments/${selectedAppointment.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -192,10 +194,10 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       const updated = await response.json();
 
       // Actualizar en la lista local
-      setAppointments(prev => prev.map(apt => apt.id === selectedAppointment.value!.id ? updated : apt));
+      setAppointments(prev => prev.map(apt => apt.id === selectedAppointment.id ? updated : apt));
 
-      selectedAppointment.value = updated;
-      isEditingDateTime.value = false;
+      setSelectedAppointment(updated);
+      setIsEditingDateTime(false);
       setNewDate('');
       setNewTime('');
 
@@ -217,7 +219,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
   const startEditingDateTime = (appointment: Appointment) => {
     setNewDate(appointment.scheduled_date);
     setNewTime(appointment.scheduled_time);
-    isEditingDateTime.value = true;
+    setIsEditingDateTime(true);
 
     // Cargar slots disponibles para esa fecha
     loadAvailableSlots(appointment.scheduled_date, appointment);
@@ -316,13 +318,13 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       </div>
 
       {/* Modal de detalle de cita */}
-      {showAppointmentModal.value && selectedAppointment.value && (
+      {showAppointmentModal && selectedAppointment && (
         <div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
           <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
             <div class="mb-6 flex items-start justify-between">
               <h2 class="text-2xl font-bold">Detalle de Cita</h2>
               <button
-                onClick={() => (showAppointmentModal.value = false)}
+                onClick={() => setShowAppointmentModal(false)}
                 class="text-gray-400 hover:text-gray-600"
               >
                 <svg
@@ -345,14 +347,14 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Cliente</h3>
                 <p class="text-lg">
-                  {selectedAppointment.value.profiles.full_name}
+                  {selectedAppointment.profiles.full_name}
                 </p>
                 <p class="text-sm text-gray-600">
-                  {selectedAppointment.value.profiles.email}
+                  {selectedAppointment.profiles.email}
                 </p>
-                {selectedAppointment.value.profiles.phone && (
+                {selectedAppointment.profiles.phone && (
                   <p class="text-sm text-gray-600">
-                    📞 {selectedAppointment.value.profiles.phone}
+                    📞 {selectedAppointment.profiles.phone}
                   </p>
                 )}
               </div>
@@ -360,19 +362,19 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Mascota</h3>
                 <p class="text-lg">
-                  {selectedAppointment.value.pets.species === 'dog'
+                  {selectedAppointment.pets.species === 'dog'
                     ? '🐕'
                     : '🐈'}{' '}
-                  {selectedAppointment.value.pets.name}
+                  {selectedAppointment.pets.name}
                 </p>
               </div>
 
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Servicio</h3>
-                <p class="text-lg">{selectedAppointment.value.services.name}</p>
+                <p class="text-lg">{selectedAppointment.services.name}</p>
                 <p class="text-sm text-gray-600">
-                  {selectedAppointment.value.services.duration_minutes} min • €
-                  {selectedAppointment.value.services.price.toFixed(2)}
+                  {selectedAppointment.services.duration_minutes} min • €
+                  {selectedAppointment.services.price.toFixed(2)}
                 </p>
               </div>
 
@@ -380,7 +382,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                 <h3 class="mb-1 font-semibold text-gray-700">Horario</h3>
                 <p class="text-lg">
                   {new Date(
-                    selectedAppointment.value.scheduled_date + 'T00:00:00',
+                    selectedAppointment.scheduled_date + 'T00:00:00',
                   ).toLocaleDateString('es-ES', {
                     weekday: 'long',
                     year: 'numeric',
@@ -389,62 +391,62 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                   })}
                 </p>
                 <p class="text-sm text-gray-600">
-                  {selectedAppointment.value.scheduled_time}
+                  {selectedAppointment.scheduled_time}
                 </p>
               </div>
 
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Estado</h3>
                 <span
-                  class={`status-badge status-${selectedAppointment.value.status}`}
+                  class={`status-badge status-${selectedAppointment.status}`}
                 >
-                  {selectedAppointment.value.status === 'pending' &&
+                  {selectedAppointment.status === 'pending' &&
                     'Pendiente'}
-                  {selectedAppointment.value.status === 'confirmed' &&
+                  {selectedAppointment.status === 'confirmed' &&
                     'Confirmada'}
-                  {selectedAppointment.value.status === 'in_progress' &&
+                  {selectedAppointment.status === 'in_progress' &&
                     'En Proceso'}
-                  {selectedAppointment.value.status === 'completed' &&
+                  {selectedAppointment.status === 'completed' &&
                     'Completada'}
-                  {selectedAppointment.value.status === 'cancelled' &&
+                  {selectedAppointment.status === 'cancelled' &&
                     'Cancelada'}
                 </span>
               </div>
 
-              {!isEditingDateTime.value && (
+              {!isEditingDateTime && (
                 <div class="space-y-2 border-t pt-4">
                   <h3 class="font-semibold text-gray-700">Acciones</h3>
 
-                  {selectedAppointment.value.status !== 'cancelled' && selectedAppointment.value.status !== 'completed' && (
+                  {selectedAppointment.status !== 'cancelled' && selectedAppointment.status !== 'completed' && (
                     <>
                       <button
-                        onClick={() => startEditingDateTime(selectedAppointment.value!)}
+                        onClick={() => startEditingDateTime(selectedAppointment!)}
                         class="btn btn-secondary w-full"
                       >
                         📅 Cambiar Fecha/Hora
                       </button>
 
-                      {selectedAppointment.value.status === 'pending' && (
+                      {selectedAppointment.status === 'pending' && (
                         <button
-                          onClick={() => updateAppointmentStatus(selectedAppointment.value!.id, 'confirmed')}
+                          onClick={() => updateAppointmentStatus(selectedAppointment!.id, 'confirmed')}
                           class="btn w-full bg-blue-500 text-white hover:bg-blue-600"
                         >
                           ✓ Confirmar
                         </button>
                       )}
 
-                      {selectedAppointment.value.status === 'confirmed' && (
+                      {selectedAppointment.status === 'confirmed' && (
                         <button
-                          onClick={() => updateAppointmentStatus(selectedAppointment.value!.id, 'in_progress')}
+                          onClick={() => updateAppointmentStatus(selectedAppointment!.id, 'in_progress')}
                           class="btn w-full bg-purple-500 text-white hover:bg-purple-600"
                         >
                           ▶ Iniciar
                         </button>
                       )}
 
-                      {selectedAppointment.value.status === 'in_progress' && (
+                      {selectedAppointment.status === 'in_progress' && (
                         <button
-                          onClick={() => updateAppointmentStatus(selectedAppointment.value!.id, 'completed')}
+                          onClick={() => updateAppointmentStatus(selectedAppointment!.id, 'completed')}
                           class="btn w-full bg-green-500 text-white hover:bg-green-600"
                         >
                           ✓ Completar
@@ -452,7 +454,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                       )}
 
                       <button
-                        onClick={() => cancelAppointment(selectedAppointment.value!.id)}
+                        onClick={() => cancelAppointment(selectedAppointment!.id)}
                         class="btn w-full bg-red-500 text-white hover:bg-red-600"
                       >
                         ✕ Cancelar Cita
@@ -461,7 +463,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                   )}
 
                   <button
-                    onClick={() => (showAppointmentModal.value = false)}
+                    onClick={() => setShowAppointmentModal(false)}
                     class="btn btn-secondary w-full"
                   >
                     Cerrar
@@ -469,7 +471,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                 </div>
               )}
 
-              {isEditingDateTime.value && (
+              {isEditingDateTime && (
                 <div class="space-y-4 border-t pt-4">
                   <h3 class="font-semibold text-gray-700">Cambiar Fecha y Hora</h3>
 
@@ -484,8 +486,8 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                         const date = (e.target as HTMLInputElement).value;
                         setNewDate(date);
                         setNewTime('');
-                        if (date && selectedAppointment.value) {
-                          loadAvailableSlots(date, selectedAppointment.value);
+                        if (date && selectedAppointment) {
+                          loadAvailableSlots(date, selectedAppointment);
                         }
                       }}
                     />
@@ -527,7 +529,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                   <div class="flex gap-2">
                     <button
                       onClick={() => {
-                        isEditingDateTime.value = false;
+                        setIsEditingDateTime(false);
                         setNewDate('');
                         setNewTime('');
                       }}
@@ -552,9 +554,9 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
 
       {/* Modal para crear nueva cita desde admin */}
       <AdminBookingModal
-        isOpen={showAdminBookingModal.value}
-        onClose={() => (showAdminBookingModal.value = false)}
-        selectedDate={selectedDateForBooking.value}
+        isOpen={showAdminBookingModal}
+        onClose={() => setShowAdminBookingModal(false)}
+        selectedDate={selectedDateForBooking}
         services={services}
         onBookingComplete={handleBookingComplete}
       />
