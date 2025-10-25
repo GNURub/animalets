@@ -114,6 +114,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     date: bookingDate,
+                    service_id: service.id,
                     duration: service.duration_minutes,
                 }),
             });
@@ -168,8 +169,8 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                             breed: selectedPet.breed,
                         },
                     service_id: selectedService.id,
-                    date: bookingDate,
-                    start_time: selectedTime,
+                    scheduled_date: bookingDate,
+                    scheduled_time: selectedTime,
                     notes: bookingNotes || null,
                 }),
             });
@@ -313,10 +314,10 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                                                 onClick={() => slot.available && handleSelectTime(slot.time)}
                                                 disabled={!slot.available}
                                                 class={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${!slot.available
-                                                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                                                        : selectedTime === slot.time
-                                                            ? 'bg-blue-600 text-white'
-                                                            : 'border-2 border-gray-200 bg-white hover:border-blue-500'
+                                                    ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                                    : selectedTime === slot.time
+                                                        ? 'bg-blue-600 text-white'
+                                                        : 'border-2 border-gray-200 bg-white hover:border-blue-500'
                                                     }`}
                                             >
                                                 {slot.time}

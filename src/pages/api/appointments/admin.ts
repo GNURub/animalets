@@ -23,8 +23,8 @@ interface CreatePetPayload {
  *     pet_id?: string | null - Si existe. Si null, usar pet_data
  *     pet_data?: CreatePetPayload - Para crear nueva mascota si no existe
  *     service_id: string (requerido)
- *     date: string (YYYY-MM-DD) (requerido)
- *     start_time: string (HH:MM) (requerido)
+ *     scheduled_date: string (YYYY-MM-DD) (requerido)
+ *     scheduled_time: string (HH:MM) (requerido)
  *     notes?: string
  *   }
  */
@@ -50,12 +50,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const body = await request.json();
-    let { pet_id, pet_data, service_id, date, start_time, notes } = body;
+    let {
+      pet_id,
+      pet_data,
+      service_id,
+      scheduled_date,
+      scheduled_time,
+      notes,
+    } = body;
 
     // Validar campos requeridos
-    if (!service_id || !date || !start_time) {
+    if (!service_id || !scheduled_date || !scheduled_time) {
       return new Response(
-        'Faltan campos requeridos (service_id, date, start_time)',
+        'Faltan campos requeridos (service_id, scheduled_date, scheduled_time)',
         { status: 400 },
       );
     }
@@ -134,7 +141,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Calcular end_time basado en duration
-    const [hours, minutes] = start_time.split(':').map(Number);
+    const [hours, minutes] = scheduled_time.split(':').map(Number);
     const endMinutes = hours * 60 + minutes + service.duration_minutes;
     const endHours = Math.floor(endMinutes / 60);
     const endMins = endMinutes % 60;
@@ -147,8 +154,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         client_id: user.id, // El admin que crea la cita
         pet_id,
         service_id,
-        date,
-        start_time,
+        scheduled_date,
+        scheduled_time,
         end_time,
         status: 'pending',
         notes: notes || null,
