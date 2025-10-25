@@ -242,7 +242,7 @@ const TodayKanban: FunctionalComponent<TodayKanbanProps> = ({
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Cliente</h3>
                 <p class="text-lg">
-                  {selectedAppointment.value.profiles.full_name}
+                  {selectedAppointment.value.profiles?.full_name}
                 </p>
                 <p class="text-sm text-gray-600">
                   {selectedAppointment.value.profiles.email}

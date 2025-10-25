@@ -41,7 +41,7 @@ interface Appointment {
     full_name: string;
     email: string;
     phone: string | null;
-  };
+  } | null;
 }
 
 interface Service {
@@ -366,12 +366,12 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Cliente</h3>
                 <p class="text-lg">
-                  {selectedAppointment.profiles.full_name}
+                  {selectedAppointment.profiles?.full_name}
                 </p>
                 <p class="text-sm text-gray-600">
-                  {selectedAppointment.profiles.email}
+                  {selectedAppointment.profiles?.email}
                 </p>
-                {selectedAppointment.profiles.phone && (
+                {selectedAppointment.profiles?.phone && (
                   <p class="text-sm text-gray-600">
                     📞 {selectedAppointment.profiles.phone}
                   </p>
