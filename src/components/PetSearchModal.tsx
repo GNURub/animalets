@@ -1,4 +1,3 @@
-import { signal } from '@preact/signals';
 import type { FC } from 'react';
 import { useState } from 'react';
 
@@ -9,7 +8,7 @@ interface Pet {
     size: string;
     breed?: string;
     owner_id: string | null;
-    weight_kg?: number;
+    weight?: number;
     gender?: string;
 }
 
@@ -27,7 +26,7 @@ interface CreatePetData {
     breed?: string;
     gender?: 'macho' | 'hembra';
     notes?: string;
-    weight_kg?: number;
+    weight?: number;
 }
 
 interface PetSearchModalProps {
@@ -38,10 +37,6 @@ interface PetSearchModalProps {
     isLoading?: boolean;
 }
 
-const searchQuery = signal('');
-const searchResults = signal<Pet[]>([]);
-const isSearching = signal(false);
-const showCreateForm = signal(false);
 
 // @ts-ignore - Preact compat works fine
 const PetSearchModal: FC<PetSearchModalProps> = ({
@@ -51,6 +46,10 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
     services,
     isLoading = false,
 }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<Pet[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showCreateForm, setShowCreateForm] = useState(false);
     const [creatingPet, setCreatingPet] = useState(false);
     const [formData, setFormData] = useState<CreatePetData>({
         name: '',
@@ -63,25 +62,25 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
 
     // Buscar mascotas
     const handleSearch = async (q: string) => {
-        searchQuery.value = q;
+        setSearchQuery(q);
 
         if (!q.trim()) {
-            searchResults.value = [];
+            setSearchResults([]);
             return;
         }
 
-        isSearching.value = true;
+        setIsSearching(true);
         try {
             const response = await fetch(`/api/pets/search?q=${encodeURIComponent(q)}`);
             if (!response.ok) throw new Error('Error en búsqueda');
 
             const results = await response.json();
-            searchResults.value = results;
+            setSearchResults(results);
         } catch (error) {
             console.error('Error al buscar mascotas:', error);
-            searchResults.value = [];
+            setSearchResults([]);
         } finally {
-            isSearching.value = false;
+            setIsSearching(false);
         }
     };
 
@@ -117,9 +116,9 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
                 gender: 'macho',
                 notes: '',
             });
-            showCreateForm.value = false;
-            searchQuery.value = '';
-            searchResults.value = [];
+            setShowCreateForm(false);
+            setSearchQuery('');
+            setSearchResults([]);
         } catch (error) {
             console.error('Error:', error);
             alert(`Error al crear mascota: ${error instanceof Error ? error.message : 'Desconocido'}`);
@@ -127,8 +126,6 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
             setCreatingPet(false);
         }
     };
-
-    if (!isOpen) return null;
 
     const speciesEmoji = {
         dog: '🐕',
@@ -140,7 +137,7 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
         <div class="space-y-4 border-t pt-4">
             <h3 class="font-semibold text-gray-700">Buscar o Crear Mascota</h3>
 
-            {!showCreateForm.value ? (
+            {!showCreateForm ? (
                 <>
                     {/* Campo de búsqueda */}
                     <div>
@@ -149,27 +146,27 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
                             type="text"
                             class="input w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
                             placeholder="Ej: Fluffy, Mimi, Rex..."
-                            value={searchQuery.value}
+                            value={searchQuery}
                             onChange={(e) => handleSearch((e.target as HTMLInputElement).value)}
-                            disabled={isSearching.value || isLoading}
+                            disabled={isSearching || isLoading}
                         />
                     </div>
 
                     {/* Resultados de búsqueda */}
-                    {isSearching.value && (
+                    {isSearching && (
                         <div class="text-center text-sm text-gray-500">Buscando...</div>
                     )}
 
-                    {!isSearching.value && searchQuery.value && searchResults.value.length === 0 && (
+                    {!isSearching && searchQuery && searchResults.length === 0 && (
                         <div class="rounded-lg bg-blue-50 p-3 text-center text-sm text-blue-700">
                             No se encontraron mascotas con ese nombre
                         </div>
                     )}
 
-                    {!isSearching.value && searchResults.value.length > 0 && (
+                    {!isSearching && searchResults.length > 0 && (
                         <div class="space-y-2 max-h-64 overflow-y-auto">
                             <label class="text-sm font-medium text-gray-600">Mascotas encontradas:</label>
-                            {searchResults.value.map((pet) => (
+                            {searchResults.map((pet) => (
                                 <button
                                     key={pet.id}
                                     onClick={() => onSelectPet(pet)}
@@ -195,7 +192,7 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
 
                     {/* Botón crear nueva */}
                     <button
-                        onClick={() => showCreateForm.value = true}
+                        onClick={() => setShowCreateForm(true)}
                         class="btn btn-secondary w-full"
                         disabled={isLoading}
                     >
@@ -309,7 +306,7 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
                         {/* Botones */}
                         <div class="flex gap-2 pt-2">
                             <button
-                                onClick={() => showCreateForm.value = false}
+                                onClick={() => setShowCreateForm(false)}
                                 class="btn btn-secondary flex-1 text-sm"
                                 disabled={creatingPet}
                             >

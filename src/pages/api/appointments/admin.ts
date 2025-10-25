@@ -5,7 +5,7 @@ interface CreatePetPayload {
   species: 'dog' | 'cat' | 'other';
   size: 'pequeño' | 'mediano' | 'grande';
   breed?: string;
-  weight_kg?: number;
+  weight?: number;
   birth_date?: string;
   gender?: 'macho' | 'hembra';
   notes?: string;
@@ -74,7 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         species,
         size,
         breed,
-        weight_kg,
+        weight,
         birth_date,
         gender,
         photo_url,
@@ -94,7 +94,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           species,
           size,
           breed,
-          weight_kg,
+          weight,
           birth_date,
           gender,
           notes: pet_data.notes,

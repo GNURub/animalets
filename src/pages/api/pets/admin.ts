@@ -12,7 +12,7 @@ import type { APIRoute } from 'astro';
  *     species: 'dog' | 'cat' | 'other' (requerido)
  *     size: 'pequeño' | 'mediano' | 'grande' (requerido)
  *     breed?: string
- *     weight_kg?: number
+ *     weight?: number
  *     birth_date?: date
  *     gender?: 'macho' | 'hembra'
  *     notes?: string
@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       name,
       species,
       breed,
-      weight_kg,
+      weight,
       birth_date,
       gender,
       notes,
@@ -83,7 +83,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         name,
         species,
         breed,
-        weight_kg,
+        weight,
         birth_date,
         gender,
         notes,

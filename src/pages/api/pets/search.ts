@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const { data, error } = await locals.supabase
       .from('pets')
       .select(
-        'id, name, species, breed, size, owner_id, weight_kg, gender, notes, photo_url',
+        'id, name, species, breed, size, owner_id, gender, notes, photo_url',
       )
       .or(`name.ilike.%${query}%,breed.ilike.%${query}%`)
       .order('name', { ascending: true })
