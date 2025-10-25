@@ -8,7 +8,7 @@ if (!supabase) return Astro.redirect('/signin');
 // Obtener las citas de hoy
 const today = new Date().toISOString().split('T')[0];
 
-const { data: todayAppointments } = await supabase
+const { data: todayAppointments, error } = await supabase
   .from('appointments')
   .select(
     `
@@ -20,6 +20,8 @@ const { data: todayAppointments } = await supabase
   )
   .eq('scheduled_date', today)
   .order('scheduled_time', { ascending: true });
+
+console.log('Citas de hoy:', todayAppointments, 'Error:', error);
 
 // Separar por estado
 const pending = todayAppointments?.filter((a) => a.status === 'pending') || [];
@@ -88,14 +90,27 @@ const stats = {
     </div>
   </div>
 
-  <!-- Kanban Board -->
-  <TodayKanban
-    client:load
-    initialAppointments={{
-      pending,
-      confirmed,
-      inProgress,
-      completed,
-    }}
-  />
+  {
+    stats.total === 0 ? (
+      <div class='card py-12 text-center'>
+        <div class='mb-4 text-6xl'>📅</div>
+        <h3 class='mb-2 text-xl font-bold text-gray-900'>
+          No hay citas para hoy
+        </h3>
+        <p class='text-gray-600'>
+          Las citas programadas para hoy aparecerán aquí
+        </p>
+      </div>
+    ) : (
+      <TodayKanban
+        client:load
+        initialAppointments={{
+          pending,
+          confirmed,
+          inProgress,
+          completed,
+        }}
+      />
+    )
+  }
 </AdminLayout>
