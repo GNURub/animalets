@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import toast from 'react-hot-toast';
 import StaffScheduling from './StaffScheduling';
 
 interface BusinessHour {
@@ -101,7 +102,7 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
       );
     } catch (error) {
       console.error('Error al actualizar horario:', error);
-      alert('Error al actualizar horario');
+      toast.error('Error al actualizar horario');
     }
   };
 
@@ -167,7 +168,7 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
       closeBlockedModal();
     } catch (error) {
       console.error('Error al guardar tiempo bloqueado:', error);
-      alert(error instanceof Error ? error.message : 'Error al guardar');
+      toast.error(error instanceof Error ? error.message : 'Error al guardar');
     } finally {
       isLoading.value = false;
     }
@@ -188,7 +189,7 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
       setBlockedTimes(blockedTimes.filter((bt) => bt.id !== id));
     } catch (error) {
       console.error('Error al eliminar tiempo bloqueado:', error);
-      alert('Error al eliminar');
+      toast.error('Error al eliminar');
     }
   };
 

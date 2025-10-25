@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import toast from 'react-hot-toast';
 
 interface Service {
   id: string;
@@ -104,7 +105,7 @@ const ServiceManager: FunctionalComponent<ServiceManagerProps> = ({
       closeModal();
     } catch (error) {
       console.error('Error al guardar servicio:', error);
-      alert(
+      toast.error(
         error instanceof Error ? error.message : 'Error al guardar servicio',
       );
     } finally {
@@ -129,7 +130,7 @@ const ServiceManager: FunctionalComponent<ServiceManagerProps> = ({
       setServices(services.filter((s) => s.id !== serviceId));
     } catch (error) {
       console.error('Error al eliminar servicio:', error);
-      alert('Error al eliminar servicio. Puede que tenga citas asociadas.');
+      toast.error('Error al eliminar servicio. Puede que tenga citas asociadas.');
     }
   };
 
@@ -154,7 +155,7 @@ const ServiceManager: FunctionalComponent<ServiceManagerProps> = ({
       );
     } catch (error) {
       console.error('Error al actualizar servicio:', error);
-      alert('Error al actualizar servicio');
+      toast.error('Error al actualizar servicio');
     }
   };
 

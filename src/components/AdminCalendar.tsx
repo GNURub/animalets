@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 // @ts-ignore - Calendar works with preact/compat
 import { Calendar, momentLocalizer, type Event, type View } from 'react-big-calendar';
+import toast from 'react-hot-toast';
 import '../styles/calendar.css';
 import AdminBookingModal from './AdminBookingModal';
 
@@ -154,7 +155,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       setAvailableSlots(slots);
     } catch (error) {
       console.error('Error al cargar slots:', error);
-      alert('Error al cargar horarios disponibles');
+      toast.error('Error al cargar horarios disponibles');
     } finally {
       setLoadingSlots(false);
     }
@@ -182,17 +183,17 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
         setSelectedAppointment(updated);
       }
 
-      alert('Estado actualizado correctamente');
+      toast.success('Estado actualizado correctamente');
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al actualizar el estado');
+      toast.error('Error al actualizar el estado');
     }
   };
 
   // Cambiar fecha/hora de cita
   const updateAppointmentDateTime = async () => {
     if (!selectedAppointment || !newDate || !newTime) {
-      alert('Selecciona fecha y hora');
+      toast.error('Selecciona fecha y hora');
       return;
     }
 
@@ -220,10 +221,10 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       setNewDate('');
       setNewTime('');
 
-      alert('Cita reagendada correctamente');
+      toast.success('Cita reagendada correctamente');
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al reagendar la cita');
+      toast.error('Error al reagendar la cita');
     }
   };
 
@@ -451,15 +452,6 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                       >
                         📅 Cambiar Fecha/Hora
                       </button>
-
-                      {selectedAppointment.status === 'pending' && (
-                        <button
-                          onClick={() => updateAppointmentStatus(selectedAppointment!.id, 'confirmed')}
-                          class="btn w-full bg-blue-500 text-white hover:bg-blue-600"
-                        >
-                          ✓ Confirmar
-                        </button>
-                      )}
 
                       {selectedAppointment.status === 'confirmed' && (
                         <button

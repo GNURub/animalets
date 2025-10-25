@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import toast from 'react-hot-toast';
 
 interface Pet {
   id: string;
@@ -121,7 +122,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
       closeModal();
     } catch (error) {
       console.error('Error al guardar mascota:', error);
-      alert(
+      toast.error(
         error instanceof Error ? error.message : 'Error al guardar mascota',
       );
     } finally {
@@ -146,7 +147,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
       setPets(pets.filter((p) => p.id !== petId));
     } catch (error) {
       console.error('Error al eliminar mascota:', error);
-      alert('Error al eliminar mascota');
+      toast.error('Error al eliminar mascota');
     }
   };
 

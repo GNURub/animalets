@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import PetSearchModal from './PetSearchModal';
 
 interface Pet {
@@ -114,7 +115,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
     // Manejar paso siguiente después de seleccionar servicios
     const handleServicesSelected = async () => {
         if (selectedServices.length === 0) {
-            alert('Por favor selecciona al menos un servicio');
+            toast.error('Por favor selecciona al menos un servicio');
             return;
         }
         setCurrentStep('select-time');
@@ -142,7 +143,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
             setAvailableSlots(slots);
         } catch (error) {
             console.error('Error al cargar slots:', error);
-            alert('Error al cargar horarios disponibles');
+            toast.error('Error al cargar horarios disponibles');
             setAvailableSlots([]);
         } finally {
             setIsLoadingSlots(false);
@@ -166,7 +167,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
     // Guardar cita
     const handleSaveBooking = async () => {
         if (!selectedPet || selectedServices.length === 0 || !selectedTime) {
-            alert('Faltan datos para crear la cita');
+            toast.error('Faltan datos para crear la cita');
             return;
         }
 
@@ -199,11 +200,11 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
 
             const appointment = await response.json();
             onBookingComplete(appointment);
-            alert('✅ Cita creada correctamente');
+            toast.success('✅ Cita creada correctamente');
             handleClose();
         } catch (error) {
             console.error('Error:', error);
-            alert(`Error al crear cita: ${error instanceof Error ? error.message : 'Desconocido'}`);
+            toast.error(`Error al crear cita: ${error instanceof Error ? error.message : 'Desconocido'}`);
         } finally {
             setIsSavingBooking(false);
         }
@@ -275,8 +276,8 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                                             key={service.id}
                                             onClick={() => handleToggleService(service)}
                                             class={`w-full rounded-lg border-2 p-3 text-left transition-colors ${selectedServices.find(s => s.id === service.id)
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50'
                                                 }`}
                                         >
                                             <div class="flex items-center justify-between">
