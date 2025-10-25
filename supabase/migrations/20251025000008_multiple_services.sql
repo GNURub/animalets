@@ -91,8 +91,8 @@ BEGIN
       SELECT 1 FROM appointment_services WHERE appointment_id = a.id
     );
     
-    -- Remover service_id (con CASCADE porque puede haber vistas que la usen)
-    ALTER TABLE appointments DROP COLUMN service_id CASCADE;
+    -- Remover service_id
+    ALTER TABLE appointments DROP COLUMN service_id;
   END IF;
 END $$;
 

@@ -81,6 +81,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Verificar si la fecha es hoy
     const today = new Date().toISOString().split('T')[0];
+
+    // Validar que la fecha no sea en el pasado
+    if (date < today) {
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const isToday = date === today;
     const now = new Date();
     const currentHour = now.getHours();
