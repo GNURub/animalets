@@ -42,6 +42,10 @@ const coatCondition = signal<'buen_estado' | 'enredado' | 'muy_enredado' | 'con_
 const timeEstimation = signal<any>(null);
 const loadingEstimation = signal(false);
 
+// AbortControllers para cancelar peticiones
+const estimationAbortController = signal<AbortController | null>(null);
+const slotsAbortController = signal<AbortController | null>(null);
+
 const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   pets,
   services,
@@ -53,6 +57,10 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   // Resetear al desmontar
   useEffect(() => {
     return () => {
+      // Cancelar todas las peticiones pendientes
+      estimationAbortController.value?.abort();
+      slotsAbortController.value?.abort();
+
       currentStep.value = 1;
       selectedServices.value = [];
       selectedPet.value = null;
@@ -83,6 +91,13 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   const loadAvailableSlots = async () => {
     if (!selectedDate.value || selectedServices.value.length === 0) return;
 
+    // Cancelar petición anterior si existe
+    slotsAbortController.value?.abort();
+
+    // Crear nuevo AbortController
+    const controller = new AbortController();
+    slotsAbortController.value = controller;
+
     loadingSlots.value = true;
     try {
       const response = await fetch('/api/slots/available', {
@@ -92,6 +107,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
           date: selectedDate.value,
           service_ids: selectedServices.value.map((s) => s.id),
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -100,9 +116,12 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
       const slots = await response.json();
       availableSlots.value = slots;
-    } catch (err) {
-      console.error('Error al cargar slots:', err);
-      setError('Error al cargar horarios disponibles');
+    } catch (err: any) {
+      // AbortError no es un error real, solo cancelación
+      if (err.name !== 'AbortError') {
+        console.error('Error al cargar slots:', err);
+        setError('Error al cargar horarios disponibles');
+      }
     } finally {
       loadingSlots.value = false;
     }
@@ -110,6 +129,13 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
   const loadTimeEstimation = async () => {
     if (!selectedPet.value || selectedServices.value.length === 0) return;
+
+    // Cancelar petición anterior si existe
+    estimationAbortController.value?.abort();
+
+    // Crear nuevo AbortController
+    const controller = new AbortController();
+    estimationAbortController.value = controller;
 
     loadingEstimation.value = true;
     try {
@@ -128,6 +154,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
           dogProfile,
           requestedServices,
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -136,9 +163,12 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
       const estimation = await response.json();
       timeEstimation.value = estimation;
-    } catch (err) {
-      console.error('Error al cargar estimación:', err);
-      setError('Error al cargar estimación de tiempo');
+    } catch (err: any) {
+      // AbortError no es un error real, solo cancelación
+      if (err.name !== 'AbortError') {
+        console.error('Error al cargar estimación:', err);
+        setError('Error al cargar estimación de tiempo');
+      }
     } finally {
       loadingEstimation.value = false;
     }
@@ -177,6 +207,10 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   };
 
   const goBack = () => {
+    // Cancelar peticiones pendientes al retroceder
+    estimationAbortController.value?.abort();
+    slotsAbortController.value?.abort();
+
     if (currentStep.value > 1) {
       currentStep.value--;
       setError(null);
@@ -486,7 +520,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                   currentStep.value = 3;
                 }}
                 class="btn btn-primary w-full mt-4"
-                disabled={!selectedPet.value}
+                disabled={!selectedPet.value || !coatCondition.value || !timeEstimation.value}
               >
                 Continuar →
               </button>
