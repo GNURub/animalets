@@ -14,7 +14,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
   try {
     const body = await request.json();
-    const { name, species, breed, birth_date, weight, notes } = body;
+    const { name, species, breed, size, gender, birth_date, weight, notes, photo_url } = body;
 
     // Validar campos requeridos
     if (!name || !species) {
@@ -43,9 +43,12 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
         name,
         species,
         breed,
+        size,
+        gender,
         birth_date,
         weight,
         notes,
+        photo_url,
       })
       .eq('id', id)
       .select()

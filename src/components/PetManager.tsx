@@ -100,6 +100,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
         birth_date: formData.birth_date || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         notes: formData.notes || null,
+        photo_url: formData.photo_url || null,
         owner_id: userId,
       };
 

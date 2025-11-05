@@ -408,9 +408,9 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
               <p class="mb-2 text-sm font-semibold text-gray-700">
                 {selectedServices.value.length} servicio{selectedServices.value.length !== 1 ? 's' : ''} seleccionado{selectedServices.value.length !== 1 ? 's' : ''}
               </p>
-              <p class="mb-3 text-sm text-gray-600">
+              {/* <p class="mb-3 text-sm text-gray-600">
                 Duración total: {formatDuration(selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0))}
-              </p>
+              </p> */}
               <button
                 onClick={proceedToNextStep}
                 class="btn btn-primary w-full"
