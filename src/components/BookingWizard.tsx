@@ -291,14 +291,14 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                           {service.description}
                         </p>
                       )}
-                      <div class="flex items-center justify-between">
+                      {/* <div class="flex items-center justify-between">
                         <span class="text-2xl font-bold text-blue-600">
                           {formatPrice(service.price)}
                         </span>
                         <span class="text-sm text-gray-500">
                           {service.duration_minutes} min
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </button>
