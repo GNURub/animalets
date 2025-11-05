@@ -7,6 +7,7 @@ interface Pet {
   name: string;
   species: 'dog' | 'cat' | 'other';
   breed: string | null;
+  size: 'pequeño' | 'mediano' | 'grande';
 }
 
 interface Service {
@@ -37,6 +38,9 @@ const selectedTime = signal<string>('');
 const notes = signal<string>('');
 const availableSlots = signal<TimeSlot[]>([]);
 const loadingSlots = signal(false);
+const coatCondition = signal<'buen_estado' | 'enredado' | 'muy_enredado' | 'con_nudos'>('buen_estado');
+const timeEstimation = signal<any>(null);
+const loadingEstimation = signal(false);
 
 const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   pets,
@@ -64,6 +68,17 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
       loadAvailableSlots();
     }
   }, [selectedDate.value, selectedServices.value.map((s) => s.id).join(',')]);
+
+  // Cargar estimación cuando cambie la mascota, servicios o condición del pelaje
+  useEffect(() => {
+    if (selectedPet.value && selectedServices.value.length > 0) {
+      loadTimeEstimation();
+    }
+  }, [
+    selectedPet.value?.id,
+    selectedServices.value.map((s) => s.id).join(','),
+    coatCondition.value,
+  ]);
 
   const loadAvailableSlots = async () => {
     if (!selectedDate.value || selectedServices.value.length === 0) return;
@@ -93,6 +108,42 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
     }
   };
 
+  const loadTimeEstimation = async () => {
+    if (!selectedPet.value || selectedServices.value.length === 0) return;
+
+    loadingEstimation.value = true;
+    try {
+      const dogProfile = {
+        breed: selectedPet.value.breed || 'Mestizo',
+        size: selectedPet.value.size || 'mediano',
+        coat_condition: coatCondition.value,
+      };
+
+      const requestedServices = selectedServices.value.map(s => s.name);
+
+      const response = await fetch('/api/appointments/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dogProfile,
+          requestedServices,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener estimación');
+      }
+
+      const estimation = await response.json();
+      timeEstimation.value = estimation;
+    } catch (err) {
+      console.error('Error al cargar estimación:', err);
+      setError('Error al cargar estimación de tiempo');
+    } finally {
+      loadingEstimation.value = false;
+    }
+  };
+
   const toggleService = (service: Service) => {
     const index = selectedServices.value.findIndex((s) => s.id === service.id);
     if (index > -1) {
@@ -114,7 +165,6 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
   const selectPet = (pet: Pet) => {
     selectedPet.value = pet;
     setError(null);
-    currentStep.value = 3;
   };
 
   const selectDateTime = () => {
@@ -327,7 +377,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
       {/* Paso 2: Seleccionar Mascota */}
       {currentStep.value === 2 && (
-        <div class="space-y-4">
+        <div class="space-y-6">
           <button onClick={goBack} class="btn btn-secondary mb-4">
             ← Volver
           </button>
@@ -337,7 +387,10 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
               <button
                 key={pet.id}
                 onClick={() => selectPet(pet)}
-                class="card cursor-pointer border-2 border-transparent text-left transition-shadow hover:border-blue-500 hover:shadow-lg"
+                class={`card cursor-pointer border-2 text-left transition-shadow hover:border-blue-500 hover:shadow-lg ${selectedPet.value?.id === pet.id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-transparent'
+                  }`}
               >
                 <div class="flex items-center">
                   <span class="mr-3 text-4xl">
@@ -350,13 +403,85 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                   <div>
                     <h3 class="text-xl font-bold">{pet.name}</h3>
                     <p class="text-sm text-gray-600">
-                      {pet.breed || 'Sin raza'}
+                      {pet.breed || 'Sin raza'} • {pet.size}
                     </p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
+
+          {selectedPet.value && (
+            <div class="card">
+              <h3 class="mb-3 text-lg font-semibold">Estado del Pelaje</h3>
+              <p class="mb-4 text-sm text-gray-600">
+                Ayúdanos a estimar mejor el tiempo seleccionando el estado actual del pelaje de {selectedPet.value.name}
+              </p>
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {[
+                  { value: 'buen_estado', label: '✨ Buen Estado', desc: 'Limpio, sin nudos' },
+                  { value: 'enredado', label: '🪢 Algo Enredado', desc: 'Algunos nudos pequeños' },
+                  { value: 'muy_enredado', label: '🪢🪢 Muy Enredado', desc: 'Muchos nudos, requiere trabajo' },
+                  { value: 'con_nudos', label: '🪢🪢🪢 Con Nudos Severos', desc: 'Nudos grandes y apretados' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      coatCondition.value = option.value as any;
+                    }}
+                    class={`rounded-lg border-2 p-3 text-left transition-colors ${coatCondition.value === option.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                  >
+                    <div class="font-medium">{option.label}</div>
+                    <div class="text-sm text-gray-600">{option.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {loadingEstimation.value && (
+                <div class="mt-4 text-center">
+                  <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                  <p class="mt-2 text-sm text-gray-600">Calculando tiempo estimado...</p>
+                </div>
+              )}
+
+              {timeEstimation.value && (
+                <div class="mt-4 rounded-lg bg-green-50 p-4">
+                  <h4 class="mb-2 font-semibold text-green-800">⏱️ Tiempo Estimado</h4>
+                  <div class="space-y-2">
+                    {timeEstimation.value.estimations.map((est: any) => (
+                      <div key={est.service_name} class="flex justify-between text-sm">
+                        <span>{est.service_name}</span>
+                        <span class="font-medium">{est.time_minutes} min</span>
+                      </div>
+                    ))}
+                    <div class="border-t pt-2">
+                      <div class="flex justify-between font-bold text-green-800">
+                        <span>Total:</span>
+                        <span>{timeEstimation.value.total_time_minutes} min</span>
+                      </div>
+                    </div>
+                    {timeEstimation.value.notes && (
+                      <p class="text-xs text-green-700 mt-2">💡 {timeEstimation.value.notes}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setError(null);
+                  currentStep.value = 3;
+                }}
+                class="btn btn-primary w-full mt-4"
+                disabled={!selectedPet.value}
+              >
+                Continuar →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -437,17 +562,36 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
             <div class="border-b pb-4">
               <h3 class="mb-1 font-semibold text-gray-700">Servicios</h3>
               <div class="space-y-2">
-                {selectedServices.value.map((service) => (
-                  <div key={service.id} class="flex items-center justify-between">
-                    <p class="font-medium">{service.name}</p>
-                    <span class="text-sm text-gray-600">{service.duration_minutes} min</span>
-                  </div>
-                ))}
+                {selectedServices.value.map((service) => {
+                  const estimation = timeEstimation.value?.estimations.find(
+                    (est: any) => est.service_name === service.name
+                  );
+                  return (
+                    <div key={service.id} class="flex items-center justify-between">
+                      <p class="font-medium">{service.name}</p>
+                      <div class="text-right">
+                        <span class="text-sm text-gray-600">
+                          {estimation ? `~${estimation.time_minutes} min` : `${service.duration_minutes} min`}
+                        </span>
+                        <br />
+                        <span class="text-xs text-gray-500">
+                          {formatPrice(service.price)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <div class="mt-3 border-t pt-3">
-                <p class="text-sm font-semibold text-gray-700">
-                  Duración total: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
-                </p>
+                {timeEstimation.value ? (
+                  <p class="text-sm font-semibold text-gray-700">
+                    Duración estimada: ~{timeEstimation.value.total_time_minutes} min
+                  </p>
+                ) : (
+                  <p class="text-sm font-semibold text-gray-700">
+                    Duración estándar: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
+                  </p>
+                )}
                 <p class="text-lg font-bold text-blue-600">
                   Total: {formatPrice(selectedServices.value.reduce((sum, s) => sum + s.price, 0))}
                 </p>

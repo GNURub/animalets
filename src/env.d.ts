@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_ANON_KEY: string;
   readonly SUPABASE_SERVICE_ROLE_KEY: string;
   readonly PUBLIC_SITE_URL: string;
+  readonly GOOGLE_GENERATIVE_AI_API_KEY: string;
 }
 
 interface ImportMeta {

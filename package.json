@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.28",
     "@ai-sdk/openai": "^2.0.62",
     "@astrojs/preact": "^4.1.2",
     "@preact/signals": "^2.3.2",
@@ -16,6 +17,7 @@
     "@tailwindcss/vite": "^4.1.16",
     "ai": "^5.0.87",
     "astro": "^5.15.3",
+    "dedent": "^1.7.0",
     "moment": "^2.30.1",
     "preact": "^10.27.2",
     "react-big-calendar": "^1.19.4",
