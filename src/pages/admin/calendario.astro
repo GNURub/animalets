@@ -5,10 +5,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 const { supabase } = Astro.locals;
 if (!supabase) return Astro.redirect('/signin');
 
-// Obtener todas las citas del mes actual
+// Obtener citas de 3 meses atrás a 3 meses adelante
 const now = new Date();
-const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+const firstDay = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+const lastDay = new Date(now.getFullYear(), now.getMonth() + 4, 0);
 
 const firstDayStr = firstDay.toISOString().split('T')[0];
 const lastDayStr = lastDay.toISOString().split('T')[0];
@@ -42,8 +42,35 @@ const { data: services } = await supabase
     <p class='text-gray-600'>Vista mensual de todas las reservas</p>
   </div>
 
+  <!-- Leyenda de colores -->
+  <div class='card mb-6'>
+    <h3 class='mb-3 text-sm font-semibold text-gray-700'>Estados de Citas</h3>
+    <div class='flex flex-wrap gap-4'>
+      <div class='flex items-center gap-2'>
+        <div class='h-4 w-4 rounded bg-yellow-500'></div>
+        <span class='text-sm text-gray-700'>Pendiente</span>
+      </div>
+      <div class='flex items-center gap-2'>
+        <div class='h-4 w-4 rounded bg-blue-500'></div>
+        <span class='text-sm text-gray-700'>Confirmada</span>
+      </div>
+      <div class='flex items-center gap-2'>
+        <div class='h-4 w-4 rounded bg-purple-500'></div>
+        <span class='text-sm text-gray-700'>En Proceso</span>
+      </div>
+      <div class='flex items-center gap-2'>
+        <div class='h-4 w-4 rounded bg-green-500'></div>
+        <span class='text-sm text-gray-700'>Completada</span>
+      </div>
+      <div class='flex items-center gap-2'>
+        <div class='h-4 w-4 rounded bg-red-500'></div>
+        <span class='text-sm text-gray-700'>Cancelada</span>
+      </div>
+    </div>
+  </div>
+
   <AdminCalendar
-    client:load
+    client:only='preact'
     initialAppointments={appointments || []}
     services={services || []}
   />

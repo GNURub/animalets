@@ -106,6 +106,75 @@ export type Database = {
         >;
         Update: Partial<Database['public']['Tables']['appointments']['Insert']>;
       };
+      business_hours: {
+        Row: {
+          id: string;
+          day_of_week: number;
+          open_time: string;
+          close_time: string;
+          is_closed: boolean;
+          created_at: string;
+        };
+        Insert: Omit<
+          Database['public']['Tables']['business_hours']['Row'],
+          'id' | 'created_at'
+        >;
+        Update: Partial<
+          Database['public']['Tables']['business_hours']['Insert']
+        >;
+      };
+      blocked_times: {
+        Row: {
+          id: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          reason: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: Omit<
+          Database['public']['Tables']['blocked_times']['Row'],
+          'id' | 'created_at'
+        >;
+        Update: Partial<
+          Database['public']['Tables']['blocked_times']['Insert']
+        >;
+      };
+      default_capacity: {
+        Row: {
+          id: string;
+          appointments_per_hour: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database['public']['Tables']['default_capacity']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >;
+        Update: Partial<
+          Database['public']['Tables']['default_capacity']['Insert']
+        >;
+      };
+      staff_schedules: {
+        Row: {
+          id: string;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          staff_count: number;
+          appointments_per_hour: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database['public']['Tables']['staff_schedules']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >;
+        Update: Partial<
+          Database['public']['Tables']['staff_schedules']['Insert']
+        >;
+      };
     };
   };
 };

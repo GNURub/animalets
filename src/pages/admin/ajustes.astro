@@ -19,13 +19,27 @@ const { data: blockedTimes } = await supabase
   .gte('date', today)
   .order('date', { ascending: true })
   .order('start_time', { ascending: true });
+
+// Obtener configuración de capacidad por defecto
+const { data: capacity } = await supabase
+  .from('default_capacity')
+  .select('*')
+  .single();
+
+// Obtener excepciones de personal
+const { data: staffSchedules } = await supabase
+  .from('staff_schedules')
+  .select('*')
+  .order('day_of_week', { ascending: true })
+  .order('start_time', { ascending: true });
 ---
 
 <AdminLayout title='Ajustes del Negocio'>
   <div class='mb-8'>
     <h1 class='mb-2 text-3xl font-bold text-gray-900'>Ajustes del Negocio</h1>
     <p class='text-gray-600'>
-      Configura horarios de operación y tiempos bloqueados
+      Configura horarios de operación, tiempos bloqueados y capacidad de
+      personal
     </p>
   </div>
 
@@ -33,5 +47,12 @@ const { data: blockedTimes } = await supabase
     client:load
     initialBusinessHours={businessHours || []}
     initialBlockedTimes={blockedTimes || []}
+    initialCapacity={capacity || {
+      id: '',
+      appointments_per_hour: 1,
+      created_at: '',
+      updated_at: '',
+    }}
+    initialSchedules={staffSchedules || []}
   />
 </AdminLayout>

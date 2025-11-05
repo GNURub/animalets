@@ -1,13 +1,14 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import StaffScheduling from './StaffScheduling';
 
 interface BusinessHour {
   id: string;
   day_of_week: number;
   open_time: string;
   close_time: string;
-  is_open: boolean;
+  is_closed: boolean;
 }
 
 interface BlockedTime {
@@ -18,12 +19,32 @@ interface BlockedTime {
   reason: string | null;
 }
 
+interface StaffSchedule {
+  id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  staff_count: number;
+  appointments_per_hour: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DefaultCapacity {
+  id: string;
+  appointments_per_hour: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface BusinessSettingsProps {
   initialBusinessHours: BusinessHour[];
   initialBlockedTimes: BlockedTime[];
+  initialCapacity: DefaultCapacity;
+  initialSchedules: StaffSchedule[];
 }
 
-const activeTab = signal<'hours' | 'blocked'>('hours');
+const activeTab = signal<'hours' | 'blocked' | 'capacity'>('hours');
 const showBlockedModal = signal(false);
 const editingBlocked = signal<BlockedTime | null>(null);
 const isLoading = signal(false);
@@ -31,6 +52,8 @@ const isLoading = signal(false);
 const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
   initialBusinessHours,
   initialBlockedTimes,
+  initialCapacity,
+  initialSchedules,
 }) => {
   const [businessHours, setBusinessHours] =
     useState<BusinessHour[]>(initialBusinessHours);
@@ -175,23 +198,30 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
       <div class="mb-6 flex gap-2">
         <button
           onClick={() => (activeTab.value = 'hours')}
-          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${
-            activeTab.value === 'hours'
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
+          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${activeTab.value === 'hours'
+            ? 'bg-purple-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
         >
           Horarios de Negocio
         </button>
         <button
           onClick={() => (activeTab.value = 'blocked')}
-          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${
-            activeTab.value === 'blocked'
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
+          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${activeTab.value === 'blocked'
+            ? 'bg-purple-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
         >
           Tiempos Bloqueados
+        </button>
+        <button
+          onClick={() => (activeTab.value = 'capacity')}
+          class={`rounded-lg px-6 py-3 font-semibold transition-colors ${activeTab.value === 'capacity'
+            ? 'bg-purple-600 text-white'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+        >
+          Capacidad y Personal
         </button>
       </div>
 
@@ -211,12 +241,12 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
                     <label class="flex cursor-pointer items-center">
                       <input
                         type="checkbox"
-                        checked={hour.is_open}
+                        checked={!hour.is_closed}
                         onChange={(e) =>
                           updateBusinessHour(
                             hour,
-                            'is_open',
-                            (e.target as HTMLInputElement).checked,
+                            'is_closed',
+                            !(e.target as HTMLInputElement).checked,
                           )
                         }
                         class="form-checkbox mr-2 h-5 w-5 text-purple-600"
@@ -227,7 +257,7 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
                     </label>
                   </div>
 
-                  {hour.is_open ? (
+                  {!hour.is_closed ? (
                     <div class="flex flex-1 items-center gap-4">
                       <div>
                         <label class="mb-1 block text-xs text-gray-600">
@@ -484,6 +514,14 @@ const BusinessSettings: FunctionalComponent<BusinessSettingsProps> = ({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Tab: Capacidad y Personal */}
+      {activeTab.value === 'capacity' && (
+        <StaffScheduling
+          initialCapacity={initialCapacity}
+          initialSchedules={initialSchedules}
+        />
       )}
     </div>
   );

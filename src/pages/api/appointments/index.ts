@@ -38,31 +38,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response('Servicio no encontrado', { status: 404 });
     }
 
-    // Verificar que el slot está disponible
-    const verifyResponse = await fetch(
-      `${new URL(request.url).origin}/api/slots/available`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: scheduled_date,
-          service_id,
-          duration: service.duration_minutes,
-        }),
-      },
-    );
-
-    if (verifyResponse.ok) {
-      const slots = await verifyResponse.json();
-      const selectedSlot = slots.find((s: any) => s.time === scheduled_time);
-
-      if (!selectedSlot || !selectedSlot.available) {
-        return new Response('El horario seleccionado no está disponible', {
-          status: 400,
-        });
-      }
-    }
-
     // Calcular end_time
     const [hours, minutes] = scheduled_time.split(':').map(Number);
     const endMinutes = hours * 60 + minutes + service.duration_minutes;
@@ -76,7 +51,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { data, error } = await locals.supabase
       .from('appointments')
       .insert({
-        user_id: user.id,
+        client_id: user.id,
         service_id,
         pet_id,
         scheduled_date,
@@ -131,7 +106,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
         profiles(full_name, email, phone)
       `,
       )
-      .eq('user_id', user.id)
+      .eq('client_id', user.id)
       .order('scheduled_date', { ascending: true })
       .order('scheduled_time', { ascending: true })
       .limit(limit);

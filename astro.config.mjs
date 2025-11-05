@@ -7,9 +7,19 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   output: 'server', // SSR habilitado
 
-  integrations: [preact()],
+  integrations: [
+    preact({
+      compat: true, // Habilitar compatibilidad con React
+    }),
+  ],
 
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        react: 'preact/compat',
+        'react-dom': 'preact/compat',
+      },
+    },
   },
 });

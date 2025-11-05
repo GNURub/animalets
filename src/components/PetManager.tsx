@@ -8,6 +8,8 @@ interface Pet {
   name: string;
   species: 'dog' | 'cat' | 'other';
   breed: string | null;
+  size: 'pequeño' | 'mediano' | 'grande';
+  gender: 'macho' | 'hembra' | null;
   birth_date: string | null;
   weight: number | null;
   notes: string | null;
@@ -32,6 +34,8 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
     name: '',
     species: 'dog' as 'dog' | 'cat' | 'other',
     breed: '',
+    size: 'mediano' as 'pequeño' | 'mediano' | 'grande',
+    gender: '' as '' | 'macho' | 'hembra',
     birth_date: '',
     weight: '',
     notes: '',
@@ -43,6 +47,8 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
       name: '',
       species: 'dog',
       breed: '',
+      size: 'mediano',
+      gender: '',
       birth_date: '',
       weight: '',
       notes: '',
@@ -56,6 +62,8 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
       name: pet.name,
       species: pet.species,
       breed: pet.breed || '',
+      size: pet.size,
+      gender: pet.gender || '',
       birth_date: pet.birth_date || '',
       weight: pet.weight?.toString() || '',
       notes: pet.notes || '',
@@ -77,6 +85,8 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
         name: formData.name,
         species: formData.species,
         breed: formData.breed || null,
+        size: formData.size,
+        gender: formData.gender || null,
         birth_date: formData.birth_date || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         notes: formData.notes || null,
@@ -224,6 +234,16 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
 
               <div class="mb-4 space-y-2">
                 <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Tamaño:</span>
+                  <span class="font-medium capitalize">{pet.size}</span>
+                </div>
+                {pet.gender && (
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Género:</span>
+                    <span class="font-medium capitalize">{pet.gender}</span>
+                  </div>
+                )}
+                <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Edad:</span>
                   <span class="font-medium">
                     {getAgeString(pet.birth_date)}
@@ -353,6 +373,49 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
                     })
                   }
                 />
+              </div>
+
+              <div>
+                <label class="label">Tamaño *</label>
+                <select
+                  required
+                  class="input"
+                  value={formData.size}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      size: (e.target as HTMLSelectElement).value as
+                        | 'pequeño'
+                        | 'mediano'
+                        | 'grande',
+                    })
+                  }
+                >
+                  <option value="pequeño">Pequeño</option>
+                  <option value="mediano">Mediano</option>
+                  <option value="grande">Grande</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Género</label>
+                <select
+                  class="input"
+                  value={formData.gender}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      gender: (e.target as HTMLSelectElement).value as
+                        | ''
+                        | 'macho'
+                        | 'hembra',
+                    })
+                  }
+                >
+                  <option value="">No especificado</option>
+                  <option value="macho">Macho</option>
+                  <option value="hembra">Hembra</option>
+                </select>
               </div>
 
               <div>
