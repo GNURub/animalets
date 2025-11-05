@@ -38,7 +38,7 @@ const selectedTime = signal<string>('');
 const notes = signal<string>('');
 const availableSlots = signal<TimeSlot[]>([]);
 const loadingSlots = signal(false);
-const coatCondition = signal<'buen_estado' | 'enredado' | 'muy_enredado' | 'con_nudos'>('buen_estado');
+const coatCondition = signal<'buen_estado' | 'enredado' | 'muy_enredado' | 'con_nudos' | ''>('');
 const timeEstimation = signal<any>(null);
 const loadingEstimation = signal(false);
 
@@ -71,7 +71,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
   // Cargar estimación cuando cambie la mascota, servicios o condición del pelaje
   useEffect(() => {
-    if (selectedPet.value && selectedServices.value.length > 0) {
+    if (selectedPet.value && selectedServices.value.length > 0 && coatCondition.value) {
       loadTimeEstimation();
     }
   }, [
@@ -264,6 +264,19 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
     return maxDate.toISOString().split('T')[0];
   };
 
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (hours === 0) {
+      return `${minutes} minutos`;
+    } else if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+    } else {
+      return `${hours} ${hours === 1 ? 'hora' : 'horas'} ${remainingMinutes.toString().padStart(2, '0')} minutos`;
+    }
+  };
+
   if (success) {
     return (
       <div class="card py-12 text-center">
@@ -362,7 +375,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                 {selectedServices.value.length} servicio{selectedServices.value.length !== 1 ? 's' : ''} seleccionado{selectedServices.value.length !== 1 ? 's' : ''}
               </p>
               <p class="mb-3 text-sm text-gray-600">
-                Duración total: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
+                Duración total: {formatDuration(selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0))}
               </p>
               <button
                 onClick={proceedToNextStep}
@@ -388,8 +401,8 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                 key={pet.id}
                 onClick={() => selectPet(pet)}
                 class={`card cursor-pointer border-2 text-left transition-shadow hover:border-blue-500 hover:shadow-lg ${selectedPet.value?.id === pet.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-transparent'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-transparent'
                   }`}
               >
                 <div class="flex items-center">
@@ -430,8 +443,8 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                       coatCondition.value = option.value as any;
                     }}
                     class={`rounded-lg border-2 p-3 text-left transition-colors ${coatCondition.value === option.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-300'
                       }`}
                   >
                     <div class="font-medium">{option.label}</div>
@@ -447,25 +460,22 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                 </div>
               )}
 
-              {timeEstimation.value && (
+              {timeEstimation.value && !loadingEstimation.value && (
                 <div class="mt-4 rounded-lg bg-green-50 p-4">
                   <h4 class="mb-2 font-semibold text-green-800">⏱️ Tiempo Estimado</h4>
                   <div class="space-y-2">
                     {timeEstimation.value.estimations.map((est: any) => (
                       <div key={est.service_name} class="flex justify-between text-sm">
                         <span>{est.service_name}</span>
-                        <span class="font-medium">{est.time_minutes} min</span>
+                        <span class="font-medium">{formatDuration(est.time_minutes)}</span>
                       </div>
                     ))}
                     <div class="border-t pt-2">
                       <div class="flex justify-between font-bold text-green-800">
                         <span>Total:</span>
-                        <span>{timeEstimation.value.total_time_minutes} min</span>
+                        <span>~ {formatDuration(timeEstimation.value.total_time_minutes)}</span>
                       </div>
                     </div>
-                    {timeEstimation.value.notes && (
-                      <p class="text-xs text-green-700 mt-2">💡 {timeEstimation.value.notes}</p>
-                    )}
                   </div>
                 </div>
               )}
@@ -571,7 +581,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                       <p class="font-medium">{service.name}</p>
                       <div class="text-right">
                         <span class="text-sm text-gray-600">
-                          {estimation ? `~${estimation.time_minutes} min` : `${service.duration_minutes} min`}
+                          {estimation ? `~${formatDuration(estimation.time_minutes)}` : `${formatDuration(service.duration_minutes)}`}
                         </span>
                         <br />
                         <span class="text-xs text-gray-500">
@@ -585,11 +595,11 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
               <div class="mt-3 border-t pt-3">
                 {timeEstimation.value ? (
                   <p class="text-sm font-semibold text-gray-700">
-                    Duración estimada: ~{timeEstimation.value.total_time_minutes} min
+                    Duración estimada: ~{formatDuration(timeEstimation.value.total_time_minutes)}
                   </p>
                 ) : (
                   <p class="text-sm font-semibold text-gray-700">
-                    Duración estándar: {selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0)} min
+                    Duración estándar: {formatDuration(selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0))}
                   </p>
                 )}
                 <p class="text-lg font-bold text-blue-600">
