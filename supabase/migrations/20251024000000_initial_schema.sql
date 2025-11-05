@@ -207,6 +207,6 @@ INSERT INTO business_hours (day_of_week, open_time, close_time, is_closed) VALUE
 
 -- Datos de ejemplo: servicios
 INSERT INTO services (name, description, duration_minutes, price) VALUES
-  ('Baño', 'Baño con champú específico, acondicionador y secado', 60, 35.00),
-  ('Corte Completo', 'Corte de pelo, baño, secado y peinado', 60, 45.00),
-  ('Deslanado', 'Eliminación de pelo muerto, ideal para mudas', 60, 30.00);
+  ('Baño', 'Baño con champú específico, acondicionador y secado', 60, 22.00),
+  ('Corte Completo', 'Corte de pelo, baño, secado y peinado', 60, 25.00),
+  ('Deslanado', 'Eliminación de pelo muerto, ideal para mudas', 60, 28.00);

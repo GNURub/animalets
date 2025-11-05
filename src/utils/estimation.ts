@@ -11,7 +11,7 @@ const google = createGoogleGenerativeAI({
 export const estimationSystemPrompt = dedent`
 Eres un asistente experto en peluquería canina ("animalets") altamente preciso.
 Tu única tarea es estimar el tiempo en minutos para una lista de servicios basándote
-en las características del perro, el estado de su pelo. Añade una sobreestimación de tiempo dado que somos novatos.
+en las características del perro, el estado de su pelo.
 
 REGLAS DE ESTIMACIÓN OBLIGATORIAS:
 1.  **Tamaño/Raza:** Un perro grande (ej: Mastín) o con mucho pelo (ej: Samoyedo)
@@ -34,6 +34,7 @@ un JSON estructurado usando el esquema Zod proporcionado. NUNCA respondas fuera 
 export const EstimationSchema = z.object({
   estimations: z.array(
     z.object({
+      service_id: z.string().describe("El SERVICE_ID único del servicio solicitado"),
       service_name: z.string().describe("El nombre del servicio solicitado, ej: 'Lavado y Secado'"),
       time_minutes: z.number().describe("Tiempo estimado en minutos SOLO para este servicio")
     })
@@ -48,7 +49,7 @@ export async function estimateGroomingTime(dogProfile: {
   breed: string;
   size: 'pequeño' | 'mediano' | 'grande';
   coat_condition: 'buen_estado' | 'enredado' | 'muy_enredado' | 'con_nudos';
-}, requestedServices: string[]): Promise<EstimationResult> {
+}, requestedServices: { name: string, id: string }[]): Promise<EstimationResult> {
   const { object } = await generateObject({
     model: google('gemini-2.5-flash'),
     schema: EstimationSchema,
@@ -58,7 +59,7 @@ export async function estimateGroomingTime(dogProfile: {
         - Raza: ${dogProfile.breed}
         - Tamaño: ${dogProfile.size} (ej: pequeño, mediano, grande, gigante)
         - Estado del Pelo: ${dogProfile.coat_condition} (ej: buen_estado, enredado, muy_enredado, mudando)
-        - Servicios Solicitados: ${requestedServices.join(', ')}
+        - Servicios Solicitados: ${requestedServices.map(s => `${s.name} (SERVICE_ID: ${s.id})`).join(', ')}
       `
   });
   return object;

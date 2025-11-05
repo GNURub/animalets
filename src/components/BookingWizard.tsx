@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
+import { type EstimationResult } from '../utils/estimation';
 
 interface Pet {
   id: string;
@@ -39,7 +40,7 @@ const notes = signal<string>('');
 const availableSlots = signal<TimeSlot[]>([]);
 const loadingSlots = signal(false);
 const coatCondition = signal<'buen_estado' | 'enredado' | 'muy_enredado' | 'con_nudos' | ''>('');
-const timeEstimation = signal<any>(null);
+const timeEstimation = signal<EstimationResult | null>(null);
 const loadingEstimation = signal(false);
 
 // AbortControllers para cancelar peticiones
@@ -145,7 +146,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
         coat_condition: coatCondition.value,
       };
 
-      const requestedServices = selectedServices.value.map(s => s.name);
+      const requestedServices = selectedServices.value.map(s => ({ name: s.name, id: s.id }));
 
       const response = await fetch('/api/appointments/estimate', {
         method: 'POST',
@@ -284,6 +285,31 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
       style: 'currency',
       currency: 'EUR',
     }).format(price);
+  };
+
+  // Calcular precio basado en minutos estimados
+  // El precio del servicio es por 60 minutos
+  const calculateEstimatedPrice = (pricePerHour: number, estimatedMinutes: number) => {
+    return (pricePerHour / 60) * estimatedMinutes;
+  };
+
+  // Obtener precio estimado total basado en la estimación de tiempo
+  const getTotalEstimatedPrice = () => {
+    if (!timeEstimation.value) {
+      return 0;
+    }
+
+    return selectedServices.value.reduce((total, service) => {
+      const estimation = timeEstimation.value?.estimations.find(
+        (est) => est.service_id === service.id
+      );
+
+      if (estimation) {
+        return total + calculateEstimatedPrice(service.price, estimation.time_minutes);
+      }
+
+      return total;
+    }, 0);
   };
 
   const getMinDate = () => {
@@ -496,18 +522,38 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
 
               {timeEstimation.value && !loadingEstimation.value && (
                 <div class="mt-4 rounded-lg bg-green-50 p-4">
-                  <h4 class="mb-2 font-semibold text-green-800">⏱️ Tiempo Estimado</h4>
+                  <h4 class="mb-2 font-semibold text-green-800">⏱️ Tiempo y Precio Estimado</h4>
+                  <div class="mb-3 rounded-md bg-yellow-50 border border-yellow-200 p-2 text-xs text-yellow-800">
+                    <strong>📌 Nota:</strong> Esta es una estimación orientativa. El tiempo y precio final pueden variar según el estado real del pelaje, y condición del perro en el momento del servicio.
+                  </div>
                   <div class="space-y-2">
-                    {timeEstimation.value.estimations.map((est: any) => (
-                      <div key={est.service_name} class="flex justify-between text-sm">
-                        <span>{est.service_name}</span>
-                        <span class="font-medium">{formatDuration(est.time_minutes)}</span>
-                      </div>
-                    ))}
-                    <div class="border-t pt-2">
+                    {timeEstimation.value.estimations.map((est) => {
+                      const service = selectedServices.value.find(s => s.name === est.service_name);
+                      const estimatedPrice = service
+                        ? calculateEstimatedPrice(service.price, est.time_minutes)
+                        : 0;
+
+                      return (
+                        <div key={est.service_name} class="text-sm">
+                          <div class="flex justify-between">
+                            <span>{est.service_name}</span>
+                            <span class="font-medium">{formatDuration(est.time_minutes)}</span>
+                          </div>
+                          <div class="flex justify-between text-xs text-gray-600 mt-0.5">
+                            <span>Precio estimado:</span>
+                            <span>{formatPrice(estimatedPrice)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div class="border-t pt-2 space-y-1">
                       <div class="flex justify-between font-bold text-green-800">
-                        <span>Total:</span>
+                        <span>Tiempo Total:</span>
                         <span>~ {formatDuration(timeEstimation.value.total_time_minutes)}</span>
+                      </div>
+                      <div class="flex justify-between font-bold text-green-800">
+                        <span>Precio Total:</span>
+                        <span>~ {formatPrice(getTotalEstimatedPrice())}</span>
                       </div>
                     </div>
                   </div>
@@ -610,6 +656,10 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                   const estimation = timeEstimation.value?.estimations.find(
                     (est: any) => est.service_name === service.name
                   );
+                  const estimatedPrice = estimation
+                    ? calculateEstimatedPrice(service.price, estimation.time_minutes)
+                    : service.price;
+
                   return (
                     <div key={service.id} class="flex items-center justify-between">
                       <p class="font-medium">{service.name}</p>
@@ -619,7 +669,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
                         </span>
                         <br />
                         <span class="text-xs text-gray-500">
-                          {formatPrice(service.price)}
+                          {estimation ? `~${formatPrice(estimatedPrice)}` : formatPrice(service.price)}
                         </span>
                       </div>
                     </div>
@@ -628,17 +678,27 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
               </div>
               <div class="mt-3 border-t pt-3">
                 {timeEstimation.value ? (
-                  <p class="text-sm font-semibold text-gray-700">
-                    Duración estimada: ~{formatDuration(timeEstimation.value.total_time_minutes)}
-                  </p>
+                  <>
+                    <p class="text-sm font-semibold text-gray-700">
+                      Duración estimada: ~{formatDuration(timeEstimation.value.total_time_minutes)}
+                    </p>
+                    <p class="text-lg font-bold text-blue-600">
+                      Total estimado: ~{formatPrice(getTotalEstimatedPrice())}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2">
+                      * El precio final puede variar según el estado real del perro
+                    </p>
+                  </>
                 ) : (
-                  <p class="text-sm font-semibold text-gray-700">
-                    Duración estándar: {formatDuration(selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0))}
-                  </p>
+                  <>
+                    <p class="text-sm font-semibold text-gray-700">
+                      Duración estándar: {formatDuration(selectedServices.value.reduce((sum, s) => sum + s.duration_minutes, 0))}
+                    </p>
+                    <p class="text-lg font-bold text-blue-600">
+                      Total: {formatPrice(selectedServices.value.reduce((sum, s) => sum + s.price, 0))}
+                    </p>
+                  </>
                 )}
-                <p class="text-lg font-bold text-blue-600">
-                  Total: {formatPrice(selectedServices.value.reduce((sum, s) => sum + s.price, 0))}
-                </p>
               </div>
             </div>
 
