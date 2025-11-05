@@ -2,6 +2,7 @@ import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import { getBreeds } from '../utils/breedUtils';
+import SearchableSelect from './SearchableSelect';
 
 interface Pet {
   id: string;
@@ -357,23 +358,18 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
 
               <div>
                 <label class="label">Raza</label>
-                <select
-                  class="input"
+                <SearchableSelect
+                  options={breeds}
                   value={formData.breed}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      breed: (e.target as HTMLSelectElement).value,
+                      breed: value,
                     })
                   }
-                >
-                  <option value="">Seleccionar raza...</option>
-                  {breeds.map((breed) => (
-                    <option key={breed.value} value={breed.value}>
-                      {breed.label}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Buscar raza..."
+                  className="input"
+                />
               </div>
 
               <div>
