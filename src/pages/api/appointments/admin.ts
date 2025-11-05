@@ -16,13 +16,13 @@ interface CreatePetPayload {
  * POST /api/appointments/admin
  *
  * Crea una cita desde el admin sin requerir que la mascota esté registrada
- * Usada para reservas telefónicas
+ * Usada para reservas telefónicas. Soporta múltiples servicios.
  *
  * Body:
  *   {
  *     pet_id?: string | null - Si existe. Si null, usar pet_data
  *     pet_data?: CreatePetPayload - Para crear nueva mascota si no existe
- *     service_id: string (requerido)
+ *     service_ids: string[] (requerido) - Array de IDs de servicios
  *     scheduled_date: string (YYYY-MM-DD) (requerido)
  *     scheduled_time: string (HH:MM) (requerido)
  *     notes?: string
@@ -53,16 +53,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let {
       pet_id,
       pet_data,
-      service_id,
+      service_ids,
       scheduled_date,
       scheduled_time,
       notes,
     } = body;
 
     // Validar campos requeridos
-    if (!service_id || !scheduled_date || !scheduled_time) {
+    if (
+      !service_ids ||
+      !Array.isArray(service_ids) ||
+      service_ids.length === 0 ||
+      !scheduled_date ||
+      !scheduled_time
+    ) {
       return new Response(
-        'Faltan campos requeridos (service_id, scheduled_date, scheduled_time)',
+        'Faltan campos requeridos (service_ids debe ser array no vacío, scheduled_date, scheduled_time)',
         { status: 400 },
       );
     }
@@ -129,49 +135,98 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response('Mascota no encontrada', { status: 404 });
     }
 
-    // Obtener información del servicio
-    const { data: service, error: serviceError } = await locals.supabase
+    // Obtener información de todos los servicios
+    const { data: services, error: servicesError } = await locals.supabase
       .from('services')
       .select('id, name, duration_minutes, price')
-      .eq('id', service_id)
-      .single();
+      .in('id', service_ids);
 
-    if (serviceError || !service) {
-      return new Response('Servicio no encontrado', { status: 404 });
+    if (servicesError || !services || services.length === 0) {
+      return new Response('Servicios no encontrados', { status: 404 });
     }
 
-    // Calcular end_time basado en duration
+    // Validar que todos los service_ids existen
+    if (services.length !== service_ids.length) {
+      return new Response('Uno o más servicios no existen', { status: 404 });
+    }
+
+    // Calcular totales
+    const total_duration_minutes = services.reduce(
+      (sum, s) => sum + s.duration_minutes,
+      0,
+    );
+    const total_price = services.reduce((sum, s) => sum + s.price, 0);
+
+    // Calcular end_time basado en duración total
     const [hours, minutes] = scheduled_time.split(':').map(Number);
-    const endMinutes = hours * 60 + minutes + service.duration_minutes;
+    const endMinutes = hours * 60 + minutes + total_duration_minutes;
     const endHours = Math.floor(endMinutes / 60);
     const endMins = endMinutes % 60;
     const end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
 
     // Crear la cita
-    const { data: appointment, error: appointmentError } = await locals.supabase
-      .from('appointments')
-      .insert({
-        client_id: user.id, // El admin que crea la cita
-        pet_id,
-        service_id,
-        scheduled_date,
-        scheduled_time,
-        end_time,
-        status: 'pending',
-        notes: notes || null,
-      })
-      .select(
-        `
-        *,
-        services(id, name, price, duration_minutes),
-        pets(id, name, species, breed, owner_id)
-      `,
-      )
-      .single();
+    const { data: appointmentData, error: appointmentError } =
+      await locals.supabase
+        .from('appointments')
+        .insert({
+          client_id: user.id, // El admin que crea la cita
+          pet_id,
+          scheduled_date,
+          scheduled_time,
+          end_time,
+          total_duration_minutes,
+          total_price,
+          status: 'pending',
+          notes: notes || null,
+        })
+        .select()
+        .single();
 
     if (appointmentError) {
       console.error('Error al crear cita:', appointmentError);
       return new Response('Error al crear la cita', { status: 500 });
+    }
+
+    // Insertar servicios en la tabla de unión
+    const appointmentServices = service_ids.map((sid, index) => ({
+      appointment_id: appointmentData.id,
+      service_id: sid,
+      order_index: index,
+    }));
+
+    const { error: servicesInsertError } = await locals.supabase
+      .from('appointment_services')
+      .insert(appointmentServices);
+
+    if (servicesInsertError) {
+      console.error('Error al agregar servicios a cita:', servicesInsertError);
+      // Eliminar la cita si falla al insertar servicios
+      await locals.supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentData.id);
+      return new Response('Error al crear la cita', { status: 500 });
+    }
+
+    // Obtener la cita completa con servicios
+    const { data: appointment } = await locals.supabase
+      .from('appointments')
+      .select(
+        `
+        *,
+        appointment_services(
+          order_index,
+          services(id, name, price, duration_minutes)
+        ),
+        pets(id, name, species, breed, owner_id)
+      `,
+      )
+      .eq('id', appointmentData.id)
+      .single();
+
+    if (!appointment) {
+      console.error('Error al obtener cita creada');
+      return new Response('Error al obtener la cita', { status: 500 });
     }
 
     return new Response(JSON.stringify(appointment), {

@@ -40,10 +40,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
     // Actualizar fecha y hora
     if (scheduled_date && scheduled_time) {
-      // Obtener información del servicio para calcular end_time
+      // Obtener información de la cita para calcular end_time
       const { data: appointment } = await locals.supabase
         .from('appointments')
-        .select('services(duration_minutes)')
+        .select('total_duration_minutes')
         .eq('id', id)
         .single();
 
@@ -51,7 +51,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         return new Response('Cita no encontrada', { status: 404 });
       }
 
-      const duration = (appointment.services as any)?.duration_minutes || 60;
+      const duration = appointment.total_duration_minutes || 60;
       const [hours, minutes] = scheduled_time.split(':').map(Number);
       const endMinutes = hours * 60 + minutes + duration;
       const endHours = Math.floor(endMinutes / 60);
@@ -70,7 +70,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .select(
         `
         *,
-        services(name, duration_minutes, price),
+        appointment_services(
+          id,
+          services(id, name, duration_minutes, price)
+        ),
         pets(name, species, breed),
         profiles(full_name, email, phone)
       `,

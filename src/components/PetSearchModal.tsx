@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface Pet {
     id: string;
@@ -106,7 +107,7 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
     // Crear mascota nueva
     const handleCreatePet = async () => {
         if (!formData.name || !formData.species || !formData.size) {
-            alert('Nombre, especie y tamaño son requeridos');
+            toast.error('Nombre, especie y tamaño son requeridos');
             return;
         }
 
@@ -140,7 +141,7 @@ const PetSearchModal: FC<PetSearchModalProps> = ({
             setSearchResults([]);
         } catch (error) {
             console.error('Error:', error);
-            alert(`Error al crear mascota: ${error instanceof Error ? error.message : 'Desconocido'}`);
+            toast.error(`Error al crear mascota: ${error instanceof Error ? error.message : 'Desconocido'}`);
         } finally {
             setCreatingPet(false);
         }

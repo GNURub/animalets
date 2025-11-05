@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import PetSearchModal from './PetSearchModal';
 
 interface Pet {
@@ -54,7 +55,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
     // Estados
     const [currentStep, setCurrentStep] = useState<BookingStep>('select-pet');
     const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-    const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [selectedServices, setSelectedServices] = useState<Service[]>([]);
     const [selectedTime, setSelectedTime] = useState<string>('');
     const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
     const [bookingNotes, setBookingNotes] = useState<string>('');
@@ -64,11 +65,15 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
         selectedDate ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     );
 
+    // Calcular totales de servicios seleccionados
+    const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
+    const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+
     // Resetear modal cuando se cierra
     const handleClose = () => {
         setCurrentStep('select-pet');
         setSelectedPet(null);
-        setSelectedService(null);
+        setSelectedServices([]);
         setSelectedTime('');
         setAvailableSlots([]);
         setBookingNotes('');
@@ -98,15 +103,29 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
         setCurrentStep('select-service');
     };
 
-    // Manejar selección de servicio
-    const handleSelectService = (service: Service) => {
-        setSelectedService(service);
-        setCurrentStep('select-time');
-        loadAvailableSlots(service);
+    // Manejar selección/deselección de servicios
+    const handleToggleService = (service: Service) => {
+        setSelectedServices(prev =>
+            prev.find(s => s.id === service.id)
+                ? prev.filter(s => s.id !== service.id)
+                : [...prev, service]
+        );
     };
 
-    // Cargar slots disponibles
-    const loadAvailableSlots = async (service: Service) => {
+    // Manejar paso siguiente después de seleccionar servicios
+    const handleServicesSelected = async () => {
+        if (selectedServices.length === 0) {
+            toast.error('Por favor selecciona al menos un servicio');
+            return;
+        }
+        setCurrentStep('select-time');
+        await loadAvailableSlots();
+    };
+
+    // Cargar slots disponibles para los servicios seleccionados
+    const loadAvailableSlots = async () => {
+        if (selectedServices.length === 0) return;
+
         setIsLoadingSlots(true);
         try {
             const response = await fetch('/api/slots/available', {
@@ -114,8 +133,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     date: bookingDate,
-                    service_id: service.id,
-                    duration: service.duration_minutes,
+                    service_ids: selectedServices.map(s => s.id),
                 }),
             });
 
@@ -125,7 +143,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
             setAvailableSlots(slots);
         } catch (error) {
             console.error('Error al cargar slots:', error);
-            alert('Error al cargar horarios disponibles');
+            toast.error('Error al cargar horarios disponibles');
             setAvailableSlots([]);
         } finally {
             setIsLoadingSlots(false);
@@ -135,8 +153,8 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
     // Cambiar fecha
     const handleDateChange = async (newDate: string) => {
         setBookingDate(newDate);
-        if (selectedService) {
-            await loadAvailableSlots(selectedService);
+        if (selectedServices.length > 0) {
+            await loadAvailableSlots();
         }
     };
 
@@ -148,8 +166,8 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
 
     // Guardar cita
     const handleSaveBooking = async () => {
-        if (!selectedPet || !selectedService || !selectedTime) {
-            alert('Faltan datos para crear la cita');
+        if (!selectedPet || selectedServices.length === 0 || !selectedTime) {
+            toast.error('Faltan datos para crear la cita');
             return;
         }
 
@@ -168,7 +186,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                             size: selectedPet.size,
                             breed: selectedPet.breed,
                         },
-                    service_id: selectedService.id,
+                    service_ids: selectedServices.map(s => s.id),
                     scheduled_date: bookingDate,
                     scheduled_time: selectedTime,
                     notes: bookingNotes || null,
@@ -182,11 +200,11 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
 
             const appointment = await response.json();
             onBookingComplete(appointment);
-            alert('✅ Cita creada correctamente');
+            toast.success('✅ Cita creada correctamente');
             handleClose();
         } catch (error) {
             console.error('Error:', error);
-            alert(`Error al crear cita: ${error instanceof Error ? error.message : 'Desconocido'}`);
+            toast.error(`Error al crear cita: ${error instanceof Error ? error.message : 'Desconocido'}`);
         } finally {
             setIsSavingBooking(false);
         }
@@ -241,7 +259,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                         />
                     )}
 
-                    {/* Paso 2: Seleccionar Servicio */}
+                    {/* Paso 2: Seleccionar Servicios (Múltiples) */}
                     {currentStep === 'select-service' && selectedPet && (
                         <div class="space-y-4">
                             <div class="rounded-lg bg-blue-50 p-3">
@@ -251,24 +269,57 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                             </div>
 
                             <div>
-                                <label class="mb-2 block font-semibold text-gray-700">Selecciona un Servicio</label>
+                                <label class="mb-2 block font-semibold text-gray-700">Selecciona Servicios (puedes elegir varios)</label>
                                 <div class="space-y-2">
                                     {services.map((service) => (
                                         <button
                                             key={service.id}
-                                            onClick={() => handleSelectService(service)}
-                                            class="w-full rounded-lg border-2 border-gray-200 bg-white p-3 text-left transition-colors hover:border-blue-500 hover:bg-blue-50"
+                                            onClick={() => handleToggleService(service)}
+                                            class={`w-full rounded-lg border-2 p-3 text-left transition-colors ${selectedServices.find(s => s.id === service.id)
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 bg-white hover:border-blue-500 hover:bg-blue-50'
+                                                }`}
                                         >
                                             <div class="flex items-center justify-between">
-                                                <div>
-                                                    <p class="font-medium text-gray-900">{service.name}</p>
-                                                    <p class="text-xs text-gray-500">{service.duration_minutes} min</p>
+                                                <div class="flex items-center gap-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!selectedServices.find(s => s.id === service.id)}
+                                                        readonly
+                                                        class="h-5 w-5 rounded border-gray-300 text-blue-600"
+                                                    />
+                                                    <div>
+                                                        <p class="font-medium text-gray-900">{service.name}</p>
+                                                        <p class="text-xs text-gray-500">{service.duration_minutes} min</p>
+                                                    </div>
                                                 </div>
                                                 <p class="text-lg font-semibold text-blue-600">€{service.price.toFixed(2)}</p>
                                             </div>
                                         </button>
                                     ))}
                                 </div>
+
+                                {selectedServices.length > 0 && (
+                                    <div class="mt-4 rounded-lg bg-gray-50 p-3">
+                                        <p class="mb-1 text-sm font-semibold text-gray-700">
+                                            {selectedServices.length} servicio{selectedServices.length !== 1 ? 's' : ''} seleccionado{selectedServices.length !== 1 ? 's' : ''}
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            Duración total: {totalDuration} min
+                                        </p>
+                                        <p class="text-lg font-semibold text-gray-900">
+                                            Total: €{totalPrice.toFixed(2)}
+                                        </p>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleServicesSelected}
+                                    disabled={selectedServices.length === 0 || isSavingBooking}
+                                    class="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    Continuar →
+                                </button>
                             </div>
 
                             <button
@@ -281,12 +332,19 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                     )}
 
                     {/* Paso 3: Seleccionar Fecha y Hora */}
-                    {currentStep === 'select-time' && selectedPet && selectedService && (
+                    {currentStep === 'select-time' && selectedPet && selectedServices.length > 0 && (
                         <div class="space-y-4">
                             <div class="rounded-lg bg-green-50 p-3">
                                 <p class="text-sm text-green-700">
-                                    <span class="font-semibold">{selectedService.name}</span> • {selectedService.duration_minutes} min
+                                    <span class="font-semibold">{selectedServices.length} servicio(s)</span> • {totalDuration} min
                                 </p>
+                                <div class="mt-2 space-y-1">
+                                    {selectedServices.map((service) => (
+                                        <p key={service.id} class="text-xs text-green-600">
+                                            • {service.name} ({service.duration_minutes} min)
+                                        </p>
+                                    ))}
+                                </div>
                             </div>
 
                             <div>
@@ -337,7 +395,7 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                     )}
 
                     {/* Paso 4: Confirmar */}
-                    {currentStep === 'confirm' && selectedPet && selectedService && selectedTime && (
+                    {currentStep === 'confirm' && selectedPet && selectedServices.length > 0 && selectedTime && (
                         <div class="space-y-4">
                             <div class="space-y-2 rounded-lg bg-gray-50 p-3">
                                 <div>
@@ -348,8 +406,14 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-medium text-gray-500">Servicio</p>
-                                    <p class="text-lg font-semibold text-gray-900">{selectedService.name}</p>
+                                    <p class="text-xs font-medium text-gray-500">Servicios</p>
+                                    <div class="mt-1 space-y-1">
+                                        {selectedServices.map((service) => (
+                                            <p key={service.id} class="text-sm text-gray-700">
+                                                • {service.name} - {service.duration_minutes} min
+                                            </p>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div>
@@ -366,9 +430,9 @@ const AdminBookingModal: FC<AdminBookingModalProps> = ({
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-medium text-gray-500">Duración y Precio</p>
+                                    <p class="text-xs font-medium text-gray-500">Duración y Precio Total</p>
                                     <p class="text-lg font-semibold text-gray-900">
-                                        {selectedService.duration_minutes} min • €{selectedService.price.toFixed(2)}
+                                        {totalDuration} min • €{totalPrice.toFixed(2)}
                                     </p>
                                 </div>
                             </div>

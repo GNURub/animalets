@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import toast from 'react-hot-toast';
 
 interface Appointment {
   id: string;
@@ -95,7 +96,7 @@ const TodayKanban: FunctionalComponent<TodayKanbanProps> = ({
       }
     } catch (error) {
       console.error('Error al actualizar estado:', error);
-      alert('Error al actualizar el estado de la cita');
+      toast.error('Error al actualizar el estado de la cita');
     } finally {
       setIsUpdating(false);
     }
@@ -242,7 +243,7 @@ const TodayKanban: FunctionalComponent<TodayKanbanProps> = ({
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Cliente</h3>
                 <p class="text-lg">
-                  {selectedAppointment.value.profiles.full_name}
+                  {selectedAppointment.value.profiles?.full_name}
                 </p>
                 <p class="text-sm text-gray-600">
                   {selectedAppointment.value.profiles.email}

@@ -1,5 +1,8 @@
+import { createClient } from '@supabase/supabase-js';
 import type { MiddlewareHandler } from 'astro';
-import { supabase } from './lib/supabase';
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
 export const onRequest: MiddlewareHandler = async (
   { cookies, url, redirect, locals },
@@ -30,8 +33,25 @@ export const onRequest: MiddlewareHandler = async (
 
   // Intentar obtener el token para todas las rutas (API y páginas)
   const accessToken = cookies.get('sb-access-token')?.value;
+  const refreshToken = cookies.get('sb-refresh-token')?.value;
 
-  if (accessToken) {
+  // Crear cliente Supabase autenticado con el token del usuario
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: false,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+    },
+  });
+
+  if (accessToken && refreshToken) {
+    // Establecer la sesión del usuario en el cliente
+    await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
     // Validar token con Supabase
     const {
       data: { user },

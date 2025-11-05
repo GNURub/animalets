@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 // @ts-ignore - Calendar works with preact/compat
 import { Calendar, momentLocalizer, type Event, type View } from 'react-big-calendar';
+import toast from 'react-hot-toast';
 import '../styles/calendar.css';
 import AdminBookingModal from './AdminBookingModal';
 
@@ -21,12 +22,18 @@ interface Appointment {
   id: string;
   scheduled_date: string;
   scheduled_time: string;
+  end_time: string;
+  total_duration_minutes: number;
+  total_price: number;
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
-  services: {
-    name: string;
-    duration_minutes: number;
-    price: number;
-  };
+  appointment_services: Array<{
+    order_index: number;
+    services: {
+      name: string;
+      duration_minutes: number;
+      price: number;
+    };
+  }>;
   pets: {
     name: string;
     species: string;
@@ -35,7 +42,7 @@ interface Appointment {
     full_name: string;
     email: string;
     phone: string | null;
-  };
+  } | null;
 }
 
 interface Service {
@@ -84,10 +91,15 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       start.setHours(hours, minutes, 0, 0);
 
       const end = new Date(start);
-      end.setMinutes(end.getMinutes() + apt.services.duration_minutes);
+      end.setMinutes(end.getMinutes() + apt.total_duration_minutes);
+
+      const serviceNames = apt.appointment_services
+        .sort((a, b) => a.order_index - b.order_index)
+        .map(ams => ams.services.name)
+        .join(' + ');
 
       return {
-        title: `${apt.pets.name} - ${apt.services.name}`,
+        title: `${apt.pets.name} - ${serviceNames}`,
         start,
         end,
         resource: apt,
@@ -117,13 +129,21 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
   const loadAvailableSlots = async (date: string, appointment: Appointment) => {
     setLoadingSlots(true);
     try {
+      const serviceIds = appointment.appointment_services
+        .sort((a, b) => a.order_index - b.order_index)
+        .map(ams => ams.services);
+
       const response = await fetch('/api/slots/available', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date,
-          service_id: appointment.services.name, // Usamos el nombre ya que no tenemos el ID
-          duration: appointment.services.duration_minutes,
+          service_ids: appointment.appointment_services.map(ams => {
+            // Necesitamos el ID del servicio, pero solo tenemos el nombre
+            // Buscar en la lista de servicios disponibles
+            const serviceInList = services.find(s => s.name === ams.services.name);
+            return serviceInList?.id || '';
+          }).filter(id => id !== ''),
         }),
       });
 
@@ -135,7 +155,7 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       setAvailableSlots(slots);
     } catch (error) {
       console.error('Error al cargar slots:', error);
-      alert('Error al cargar horarios disponibles');
+      toast.error('Error al cargar horarios disponibles');
     } finally {
       setLoadingSlots(false);
     }
@@ -163,17 +183,17 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
         setSelectedAppointment(updated);
       }
 
-      alert('Estado actualizado correctamente');
+      toast.success('Estado actualizado correctamente');
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al actualizar el estado');
+      toast.error('Error al actualizar el estado');
     }
   };
 
   // Cambiar fecha/hora de cita
   const updateAppointmentDateTime = async () => {
     if (!selectedAppointment || !newDate || !newTime) {
-      alert('Selecciona fecha y hora');
+      toast.error('Selecciona fecha y hora');
       return;
     }
 
@@ -201,10 +221,10 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
       setNewDate('');
       setNewTime('');
 
-      alert('Cita reagendada correctamente');
+      toast.success('Cita reagendada correctamente');
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al reagendar la cita');
+      toast.error('Error al reagendar la cita');
     }
   };
 
@@ -347,12 +367,12 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
               <div>
                 <h3 class="mb-1 font-semibold text-gray-700">Cliente</h3>
                 <p class="text-lg">
-                  {selectedAppointment.profiles.full_name}
+                  {selectedAppointment.profiles?.full_name}
                 </p>
                 <p class="text-sm text-gray-600">
-                  {selectedAppointment.profiles.email}
+                  {selectedAppointment.profiles?.email}
                 </p>
-                {selectedAppointment.profiles.phone && (
+                {selectedAppointment.profiles?.phone && (
                   <p class="text-sm text-gray-600">
                     📞 {selectedAppointment.profiles.phone}
                   </p>
@@ -370,11 +390,18 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
               </div>
 
               <div>
-                <h3 class="mb-1 font-semibold text-gray-700">Servicio</h3>
-                <p class="text-lg">{selectedAppointment.services.name}</p>
-                <p class="text-sm text-gray-600">
-                  {selectedAppointment.services.duration_minutes} min • €
-                  {selectedAppointment.services.price.toFixed(2)}
+                <h3 class="mb-1 font-semibold text-gray-700">Servicios</h3>
+                <div class="space-y-1">
+                  {selectedAppointment.appointment_services
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map((ams, idx) => (
+                      <p key={idx} class="text-sm text-gray-600">
+                        • {ams.services.name} - {ams.services.duration_minutes} min • €{ams.services.price.toFixed(2)}
+                      </p>
+                    ))}
+                </div>
+                <p class="mt-2 text-sm font-semibold text-gray-700">
+                  Total: {selectedAppointment.total_duration_minutes} min • €{selectedAppointment.total_price.toFixed(2)}
                 </p>
               </div>
 
@@ -425,15 +452,6 @@ const AdminCalendar: FC<AdminCalendarProps> = ({
                       >
                         📅 Cambiar Fecha/Hora
                       </button>
-
-                      {selectedAppointment.status === 'pending' && (
-                        <button
-                          onClick={() => updateAppointmentStatus(selectedAppointment!.id, 'confirmed')}
-                          class="btn w-full bg-blue-500 text-white hover:bg-blue-600"
-                        >
-                          ✓ Confirmar
-                        </button>
-                      )}
 
                       {selectedAppointment.status === 'confirmed' && (
                         <button
