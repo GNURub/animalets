@@ -1,4 +1,6 @@
 import type { APIRoute } from 'astro';
+import z from 'zod';
+import { validateCreatePet } from './validatos';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const { user } = locals;
@@ -9,59 +11,43 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     const body = await request.json();
-    const {
-      name,
-      species,
-      breed,
-      birth_date,
-      weight,
-      notes,
-      owner_id,
-      size,
-      gender,
-      photo_url,
-    } = body;
+
+    // Validar datos con Zod
+    const validationResult = validateCreatePet(body);
+
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: 'Datos inválidos: ' + z.prettifyError(validationResult.error),
+          details: validationResult.error.issues,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const { data: validatedData } = validationResult;
 
     // Validar que el usuario solo puede crear mascotas para sí mismo
-    if (owner_id !== user.id) {
+    if (validatedData.owner_id !== user.id) {
       return new Response('No autorizado', { status: 403 });
-    }
-
-    // Validar campos requeridos
-    if (!name || !species || !size) {
-      return new Response('Nombre, especie y tamaño son requeridos', {
-        status: 400,
-      });
-    }
-
-    // Validar especie
-    if (!['dog', 'cat', 'other'].includes(species)) {
-      return new Response('Especie inválida', { status: 400 });
-    }
-
-    // Validar tamaño
-    if (!['pequeño', 'mediano', 'grande'].includes(size)) {
-      return new Response('Tamaño inválido', { status: 400 });
-    }
-
-    // Validar género si se proporciona
-    if (gender && !['macho', 'hembra'].includes(gender)) {
-      return new Response('Género inválido', { status: 400 });
     }
 
     const { data, error } = await locals.supabase
       .from('pets')
       .insert({
-        owner_id,
-        name,
-        species,
-        breed,
-        birth_date,
-        weight,
-        notes,
-        size,
-        gender,
-        photo_url,
+        owner_id: validatedData.owner_id,
+        name: validatedData.name,
+        species: validatedData.species,
+        breed: validatedData.breed,
+        birth_date: validatedData.birth_date,
+        weight: validatedData.weight,
+        notes: validatedData.notes,
+        size: validatedData.size,
+        gender: validatedData.gender,
+        photo_url: validatedData.photo_url,
       })
       .select()
       .single();

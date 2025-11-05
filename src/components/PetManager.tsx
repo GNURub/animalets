@@ -1,12 +1,13 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
+import { getBreeds } from '../utils/breedUtils';
 
 interface Pet {
   id: string;
   owner_id: string;
   name: string;
-  species: 'dog' | 'cat' | 'other';
+  species: 'dog';
   breed: string | null;
   size: 'pequeño' | 'mediano' | 'grande';
   gender: 'macho' | 'hembra' | null;
@@ -32,7 +33,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
   const [pets, setPets] = useState<Pet[]>(initialPets);
   const [formData, setFormData] = useState({
     name: '',
-    species: 'dog' as 'dog' | 'cat' | 'other',
+    species: 'dog' as 'dog',
     breed: '',
     size: 'mediano' as 'pequeño' | 'mediano' | 'grande',
     gender: '' as '' | 'macho' | 'hembra',
@@ -40,6 +41,8 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
     weight: '',
     notes: '',
   });
+
+  const breeds = getBreeds();
 
   const openCreateModal = () => {
     editingPet.value = null;
@@ -171,10 +174,6 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
     switch (species) {
       case 'dog':
         return '🐕';
-      case 'cat':
-        return '🐈';
-      default:
-        return '🐾';
     }
   };
 
@@ -348,31 +347,33 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
                     setFormData({
                       ...formData,
                       species: (e.target as HTMLSelectElement).value as
-                        | 'dog'
-                        | 'cat'
-                        | 'other',
+                        | 'dog',
                     })
                   }
                 >
                   <option value="dog">Perro 🐕</option>
-                  <option value="cat">Gato 🐈</option>
-                  <option value="other">Otro 🐾</option>
                 </select>
               </div>
 
               <div>
                 <label class="label">Raza</label>
-                <input
-                  type="text"
+                <select
                   class="input"
                   value={formData.breed}
-                  onInput={(e) =>
+                  onChange={(e) =>
                     setFormData({
                       ...formData,
-                      breed: (e.target as HTMLInputElement).value,
+                      breed: (e.target as HTMLSelectElement).value,
                     })
                   }
-                />
+                >
+                  <option value="">Seleccionar raza...</option>
+                  {breeds.map((breed) => (
+                    <option key={breed.value} value={breed.value}>
+                      {breed.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
