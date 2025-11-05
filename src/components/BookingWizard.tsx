@@ -239,7 +239,7 @@ const BookingWizard: FunctionalComponent<BookingWizardProps> = ({
               >
                 {step}
               </div>
-              {step < 4 && (
+              {step < 5 && (
                 <div
                   class={`mx-2 h-1 flex-1 ${currentStep.value > step ? 'bg-blue-600' : 'bg-gray-200'} `}
                 />
