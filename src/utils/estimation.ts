@@ -58,7 +58,7 @@ export async function estimateGroomingTime(dogProfile: {
         Por favor, genera la estimación para el siguiente cliente:
         - Raza: ${dogProfile.breed}
         - Tamaño: ${dogProfile.size} (ej: pequeño, mediano, grande, gigante)
-        - Estado del Pelo: ${dogProfile.coat_condition} (ej: buen_estado, enredado, muy_enredado, mudando)
+        - Estado del Pelo: ${dogProfile.coat_condition} (ej: buen_estado, enredado, muy_enredado, con_nudos)
         - Servicios Solicitados: ${requestedServices.map(s => `${s.name} (SERVICE_ID: ${s.id})`).join(', ')}
       `
   });
