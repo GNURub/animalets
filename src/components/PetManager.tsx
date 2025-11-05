@@ -1,9 +1,10 @@
 import { signal } from '@preact/signals';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
-import { getBreeds } from '../utils/breedUtils';
-import SearchableSelect from './SearchableSelect';
 import toast from 'react-hot-toast';
+import { getBreeds } from '../utils/breedUtils';
+import PhotoUploader from './PhotoUploader';
+import SearchableSelect from './SearchableSelect';
 
 interface Pet {
   id: string;
@@ -16,6 +17,7 @@ interface Pet {
   birth_date: string | null;
   weight: number | null;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -42,6 +44,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
     birth_date: '',
     weight: '',
     notes: '',
+    photo_url: '',
   });
 
   const breeds = getBreeds();
@@ -57,6 +60,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
       birth_date: '',
       weight: '',
       notes: '',
+      photo_url: '',
     });
     showModal.value = true;
   };
@@ -72,6 +76,7 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
       birth_date: pet.birth_date || '',
       weight: pet.weight?.toString() || '',
       notes: pet.notes || '',
+      photo_url: pet.photo_url || '',
     });
     showModal.value = true;
   };
@@ -462,6 +467,17 @@ const PetManager: FunctionalComponent<PetManagerProps> = ({
                   placeholder="Alergias, comportamiento especial, etc."
                 />
               </div>
+
+              <PhotoUploader
+                onPhotoUpload={(url) =>
+                  setFormData({
+                    ...formData,
+                    photo_url: url,
+                  })
+                }
+                currentPhoto={formData.photo_url}
+                petName={formData.name || 'mascota'}
+              />
 
               <div class="flex gap-3 pt-4">
                 <button
